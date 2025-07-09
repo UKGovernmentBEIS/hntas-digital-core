@@ -10,7 +10,6 @@ EXPOSE 8081
 
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-RUN apk add --no-cache util-linux
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["HNTAS.Core.Api/HNTAS.Core.Api.csproj", "HNTAS.Core.Api/"]
