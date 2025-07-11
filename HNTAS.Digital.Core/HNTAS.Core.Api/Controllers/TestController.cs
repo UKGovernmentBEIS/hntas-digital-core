@@ -56,11 +56,19 @@ namespace HNTAS.Core.Api.Controllers
             {
                 var client = new MongoClient(connectionString);
 
-                // Try to list database names to verify the connection.
-                await client.ListDatabaseNamesAsync();
+                var database = client.GetDatabase("docdb-HNTAS-dev");
+                var collection = database.GetCollection<dynamic>("ping");
 
-                _logger.LogInformation("Successfully connected to Amazon DocumentDB!");
-                return Ok("Successfully connected to Amazon DocumentDB!");
+                collection.InsertOne(new { message = "Hello DocumentDB", timestamp = DateTime.UtcNow });
+
+                var result = collection.Find(FilterDefinition<dynamic>.Empty).FirstOrDefault();
+                return Ok(result);
+
+                //// Try to list database names to verify the connection.
+                //await client.ListDatabaseNamesAsync();
+
+                //_logger.LogInformation("Successfully connected to Amazon DocumentDB!");
+                //return Ok("Successfully connected to Amazon DocumentDB!");
             }
             catch (Exception ex)
             {
