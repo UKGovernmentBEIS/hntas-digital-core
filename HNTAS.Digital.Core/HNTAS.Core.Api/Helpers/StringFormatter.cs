@@ -1,4 +1,4 @@
-﻿using HNTAS.Core.Api.Models;
+﻿using HNTAS.Core.Api.Data.Models;
 
 namespace HNTAS.Core.Api.Helpers
 {

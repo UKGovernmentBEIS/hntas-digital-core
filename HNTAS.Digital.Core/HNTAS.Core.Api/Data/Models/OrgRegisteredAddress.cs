@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 
-namespace HNTAS.Core.Api.Models
+namespace HNTAS.Core.Api.Data.Models
 {
     public class OrgRegisteredAddress
     {

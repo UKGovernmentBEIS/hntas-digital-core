@@ -1,8 +1,9 @@
-﻿using HNTAS.Core.Api.Enums;
+﻿using HNTAS.Core.Api.Data.Models;
+using HNTAS.Core.Api.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace HNTAS.Core.Api.Models.Requests
+namespace HNTAS.Core.Api.Models.Users
 {
     public class UpdateOrgDetailsAndRolesRequest
     {

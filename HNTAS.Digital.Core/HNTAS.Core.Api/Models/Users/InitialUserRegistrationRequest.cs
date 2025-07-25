@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace HNTAS.Core.Api.Models.Requests
+namespace HNTAS.Core.Api.Models.Users
 {
     public class InitialUserRegistrationRequest
     {
