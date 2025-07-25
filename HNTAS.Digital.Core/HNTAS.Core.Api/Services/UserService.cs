@@ -1,6 +1,6 @@
-﻿using HNTAS.Core.Api.Interfaces;
+﻿using HNTAS.Core.Api.Configuration;
+using HNTAS.Core.Api.Interfaces;
 using HNTAS.Core.Api.Models;
-using HNTAS.Core.Api.MongoDB;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -10,7 +10,7 @@ namespace HNTAS.Core.Api.Services
     {
         private readonly IMongoCollection<User> _usersCollection;
 
-        public UserService(IOptions<MongoDbSettings> mongoDbSettings)
+        public UserService(IOptions<DbSettings> dbSettings)
         {
             string? connectionString = Environment.GetEnvironmentVariable("DOCUMENT_DB_CONNECTION_STRING");
             if (string.IsNullOrEmpty(connectionString))
@@ -19,8 +19,8 @@ namespace HNTAS.Core.Api.Services
                     "Set 'DOCUMENT_DB_CONNECTION_STRING' environment variable");
             }
             var mongoClient = new MongoClient();
-            var mongoDatabase = mongoClient.GetDatabase(mongoDbSettings.Value.DatabaseName);
-            _usersCollection = mongoDatabase.GetCollection<User>(mongoDbSettings.Value.UsersCollectionName);
+            var mongoDatabase = mongoClient.GetDatabase(dbSettings.Value.DatabaseName);
+            _usersCollection = mongoDatabase.GetCollection<User>(dbSettings.Value.UsersCollectionName);
         }
 
         // Get all users

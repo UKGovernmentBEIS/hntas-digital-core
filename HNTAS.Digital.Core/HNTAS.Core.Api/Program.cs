@@ -1,14 +1,16 @@
+using HNTAS.Core.Api.Configuration;
 using HNTAS.Core.Api.Interfaces;
-using HNTAS.Core.Api.MongoDB;
 using HNTAS.Core.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-// Configure MongoDB settings
-builder.Services.Configure<MongoDbSettings>(
-    builder.Configuration.GetSection("MongoDbSettings"));
+builder.Services.Configure<NotificationSettings>(
+    builder.Configuration.GetSection("NotificationSettings"));
+// Configure db settings
+builder.Services.Configure<DbSettings>(
+    builder.Configuration.GetSection("DbSettings"));
 
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IOrgCounterService, OrgCounterService>();

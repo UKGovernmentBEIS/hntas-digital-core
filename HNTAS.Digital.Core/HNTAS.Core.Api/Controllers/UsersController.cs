@@ -1,10 +1,11 @@
-﻿using HNTAS.Core.Api.Constants;
+﻿using HNTAS.Core.Api.Configuration;
 using HNTAS.Core.Api.Enums;
 using HNTAS.Core.Api.Helpers;
 using HNTAS.Core.Api.Interfaces;
 using HNTAS.Core.Api.Models;
 using HNTAS.Core.Api.Models.Requests;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System.Net.Mime;
 
@@ -15,16 +16,18 @@ namespace HNTAS.Core.Api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly ILogger<UsersController> _logger; // Added logger for better logging
-        private readonly IGovUkNotifyService _emailService; // Added email service for sending notifications
-        private readonly IOrgCounterService _orgCounterService; // Added org counter service for generating OrgId
+        private readonly ILogger<UsersController> _logger;
+        private readonly IGovUkNotifyService _emailService; 
+        private readonly IOrgCounterService _orgCounterService; 
+        private readonly NotificationSettings _notificationSettings; 
 
-        public UsersController(IUserService userService, ILogger<UsersController> logger, IGovUkNotifyService emailService, IOrgCounterService orgCounterService)
+        public UsersController(IUserService userService, ILogger<UsersController> logger, IGovUkNotifyService emailService, IOrgCounterService orgCounterService, IOptions<NotificationSettings> options)
         {
             _userService = userService;
             _logger = logger;
             _emailService = emailService;
             _orgCounterService = orgCounterService;
+            _notificationSettings = options.Value;
         }
 
         /// <summary>
@@ -51,13 +54,13 @@ namespace HNTAS.Core.Api.Controllers
         }
 
         // <summary>
-        /// Get a User by their MongoDB ID
+        /// Get a User by their ID
         /// </summary>
         /// <remarks>
-        /// Retrieves a single user profile from the database using their unique MongoDB ID.
+        /// Retrieves a single user profile from the database using their unique ID.
         /// This endpoint is used to fetch the complete details of an existing user.
         /// </remarks>
-        /// <param name="id">The unique MongoDB ID (24-character hexadecimal string) of the user to retrieve.</param>
+        /// <param name="id">The unique ID (24-character hexadecimal string) of the user to retrieve.</param>
         /// <returns>
         ///   A <see cref="StatusCodes.Status200OK"/> (OK) response with the found user object,
         ///   or a <see cref="StatusCodes.Status404NotFound"/> (Not Found) response if no user matches the provided ID.
@@ -154,7 +157,7 @@ namespace HNTAS.Core.Api.Controllers
         /// </summary>
         /// <remarks>Updates specific organization details for an existing user and generates an OrgId if not already set.
         /// Changes user status to 'Active' upon successful update. Returns the fully updated user object.</remarks>
-        /// <param name="id">The MongoDB ID of the user to update.</param>
+        /// <param name="id">The  ID of the user to update.</param>
         /// <param name="request">The organization details to update.</param>
         /// <returns>The fully updated user object if successful.</returns>
         [HttpPatch("{id:length(24)}/org-details")]
@@ -342,7 +345,7 @@ namespace HNTAS.Core.Api.Controllers
 
             var emailSent = await _emailService.SendEmailAsync(
                 user.EmailId,
-                NotificationTemplates.OrgCreatedEmailTemplateId,
+                _notificationSettings.OrgCreatedEmailTemplateId,
                 new Dictionary<string, dynamic>
                 {
                     { "orgName", orgName },

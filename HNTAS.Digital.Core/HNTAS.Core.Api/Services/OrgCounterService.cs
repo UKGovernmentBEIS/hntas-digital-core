@@ -1,6 +1,6 @@
-﻿using HNTAS.Core.Api.Interfaces;
+﻿using HNTAS.Core.Api.Configuration;
+using HNTAS.Core.Api.Interfaces;
 using HNTAS.Core.Api.Models;
-using HNTAS.Core.Api.MongoDB;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -16,7 +16,7 @@ namespace HNTAS.Core.Api.Services
         /// </summary>
         /// <param name="mongoDbSettings">Configuration options for MongoDB settings.</param>
         /// <param name="logger">Logger for logging service operations and errors.</param>
-        public OrgCounterService(IOptions<MongoDbSettings> mongoDbSettings, ILogger<OrgCounterService> logger)
+        public OrgCounterService(IOptions<DbSettings> mongoDbSettings, ILogger<OrgCounterService> logger)
         {
             _logger = logger;
 

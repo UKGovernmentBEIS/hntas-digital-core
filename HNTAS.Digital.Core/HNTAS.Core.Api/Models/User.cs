@@ -8,7 +8,7 @@ namespace HNTAS.Core.Api.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; } // MongoDB uses ObjectId for _id
+        public string? Id { get; set; }
 
         [BsonElement("onelogin_id")]
         public string OneLoginId { get; set; }
@@ -23,11 +23,11 @@ namespace HNTAS.Core.Api.Models
         public List<string>? HnIds { get; set; }
 
         [BsonElement("roles")]
-        [BsonRepresentation(BsonType.String)] // Store enum names as strings in MongoDB
+        [BsonRepresentation(BsonType.String)] // Store enum names as strings in DB
         public List<UserRole>? Roles { get; set; }
 
         [BsonElement("status")]
-        [BsonRepresentation(BsonType.String)] // Store enum name as string in MongoDB
+        [BsonRepresentation(BsonType.String)] // Store enum name as string in DB
         public UserStatus? Status { get; set; }
 
         [BsonElement("invitations")]

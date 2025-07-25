@@ -1,6 +1,6 @@
-﻿namespace HNTAS.Core.Api.MongoDB
+﻿namespace HNTAS.Core.Api.Configuration
 {
-    public class MongoDbSettings
+    public class DbSettings
     {
         public string ConnectionString { get; set; }
         public string DatabaseName { get; set; }
