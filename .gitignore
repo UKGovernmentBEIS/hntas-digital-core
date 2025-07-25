@@ -404,3 +404,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/HNTAS.Digital.Core/HNTAS.Core.Api/aws-logger-errors.txt

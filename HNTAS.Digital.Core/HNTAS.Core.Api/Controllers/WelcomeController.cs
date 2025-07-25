@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace HNTAS.Core.Api.Controllers
 {
@@ -7,6 +6,13 @@ namespace HNTAS.Core.Api.Controllers
     [ApiController]
     public class WelcomeController : ControllerBase
     {
+        private readonly ILogger<WelcomeController> _logger; // Your logger
+
+        public WelcomeController(ILogger<WelcomeController> logger)
+        {
+            _logger = logger;
+        }
+
         /// <summary>
         /// Retrieves a welcome message for the HNTAS Core API.
         /// </summary>
@@ -16,6 +22,7 @@ namespace HNTAS.Core.Api.Controllers
         [EndpointDescription("This endpoint returns a simple welcome string to confirm the API is running.")] // Updated description
         public IActionResult Get()
         {
+            _logger.LogInformation("WelcomeController.Get() called.");
             return Ok("Welcome to HNTAS Core API");
         }
     }
