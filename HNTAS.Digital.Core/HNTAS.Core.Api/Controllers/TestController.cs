@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using Microsoft.Extensions.Configuration; // Ensure this is included
-using System; // For Environment.GetEnvironmentVariable
+using System;
+using HNTAS.Core.Api.Data.Models; // For Environment.GetEnvironmentVariable
 
 namespace HNTAS.Core.Api.Controllers
 {
@@ -57,17 +58,21 @@ namespace HNTAS.Core.Api.Controllers
                 var client = new MongoClient(connectionString);
 
                 var database = client.GetDatabase("docdb-HNTAS-dev");
-                var collection = database.GetCollection<dynamic>("ping");
+                var collection = database.GetCollection<dynamic>("Users");
 
-                collection.InsertOne(new { message = "Hello DocumentDB", timestamp = DateTime.UtcNow });
+                collection.InsertOne(new User { OneLoginId = "asdasdasd", Status = Enums.UserStatus.Active, EmailId = "ss@ss.com"});
 
                 var result = collection.Find(FilterDefinition<dynamic>.Empty).FirstOrDefault();
+                
+                _logger.LogInformation("Successfully connected to Amazon DocumentDB!");
+
+
                 return Ok(result);
 
                 //// Try to list database names to verify the connection.
                 //await client.ListDatabaseNamesAsync();
 
-                //_logger.LogInformation("Successfully connected to Amazon DocumentDB!");
+               
                 //return Ok("Successfully connected to Amazon DocumentDB!");
             }
             catch (Exception ex)

@@ -16,7 +16,7 @@ namespace HNTAS.Core.Api.Services
             _logger = logger;
             string? connectionString = Environment.GetEnvironmentVariable("DOCUMENT_DB_CONNECTION_STRING");
 
-            _logger.LogDebug("Initializing HeatNetworkService with connection string: {ConnectionString}", connectionString);
+            _logger.LogInformation("Initializing UserService with connection string : " + connectionString);
 
             if (string.IsNullOrEmpty(connectionString))
             {
