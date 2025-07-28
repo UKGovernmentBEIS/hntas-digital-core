@@ -23,7 +23,7 @@ namespace HNTAS.Core.Api.Services
                 throw new InvalidOperationException("MongoDB connection string is not configured. " +
                     "Set 'DOCUMENT_DB_CONNECTION_STRING' environment variable");
             }
-            var mongoClient = new MongoClient();
+            var mongoClient = new MongoClient(connectionString);
             var mongoDatabase = mongoClient.GetDatabase(dbSettings.Value.DatabaseName);
             _hnCollection = mongoDatabase.GetCollection<HeatNetwork>(dbSettings.Value.HeatNetworksCollectionName);
            

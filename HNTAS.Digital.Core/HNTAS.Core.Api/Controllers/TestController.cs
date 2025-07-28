@@ -60,9 +60,9 @@ namespace HNTAS.Core.Api.Controllers
                 var database = client.GetDatabase("docdb-HNTAS-dev");
                 var collection = database.GetCollection<User>("Users");
 
-                collection.InsertOne(new User { OneLoginId = "asdasdasd", Status = Enums.UserStatus.Active, EmailId = "ss@ss.com"});
+                collection.InsertOne(new User { OneLoginId = "asdasdasd233sd", Status = Enums.UserStatus.Active, EmailId = "ss@ss.com"});
 
-                var result = collection.Find(_ => true).ToListAsync();
+                var result = await collection.Find(_ => true).ToListAsync();
 
                 _logger.LogInformation("Successfully connected to Amazon DocumentDB!");
 
