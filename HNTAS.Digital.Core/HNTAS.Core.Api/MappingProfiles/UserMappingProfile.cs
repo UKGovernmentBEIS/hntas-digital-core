@@ -28,12 +28,13 @@ namespace HNTAS.Core.Api.MappingProfiles
             .ForMember(dest => dest.Organisation, opt => opt.MapFrom(src => src.OrgDetails))
             .ForMember(dest => dest.Roles, opt => opt.MapFrom(src =>
                 src.Roles.Select(role => role.GetDescription()).ToList()
+            ))  
+            .ForMember(dest => dest.HnIds, opt => opt.MapFrom(src =>
+                src.HnIds.Select(hnid => hnid).ToList()
             ))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src =>
                 src.Status.ToString()
             ));
-
-
         }
     }
 }
