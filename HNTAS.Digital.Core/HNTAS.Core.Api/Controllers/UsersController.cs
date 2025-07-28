@@ -1,12 +1,12 @@
-﻿using HNTAS.Core.Api.Configuration;
+﻿using AutoMapper;
+using HNTAS.Core.Api.Configuration;
+using HNTAS.Core.Api.Data.Models;
 using HNTAS.Core.Api.Enums;
 using HNTAS.Core.Api.Helpers;
 using HNTAS.Core.Api.Interfaces;
-using HNTAS.Core.Api.Models;
-using HNTAS.Core.Api.Models.Requests;
+using HNTAS.Core.Api.Models.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using MongoDB.Driver;
 using System.Net.Mime;
 
 namespace HNTAS.Core.Api.Controllers
@@ -18,16 +18,23 @@ namespace HNTAS.Core.Api.Controllers
         private readonly IUserService _userService;
         private readonly ILogger<UsersController> _logger;
         private readonly IGovUkNotifyService _emailService; 
-        private readonly IOrgCounterService _orgCounterService; 
-        private readonly NotificationSettings _notificationSettings; 
+        private readonly ICounterService _orgCounterService; 
+        private readonly NotificationSettings _notificationSettings;
+        private readonly IMapper _mapper;
 
-        public UsersController(IUserService userService, ILogger<UsersController> logger, IGovUkNotifyService emailService, IOrgCounterService orgCounterService, IOptions<NotificationSettings> options)
+        public UsersController(IUserService userService, 
+            ILogger<UsersController> logger, 
+            IGovUkNotifyService emailService, 
+            ICounterService orgCounterService, 
+            IOptions<NotificationSettings> options,
+            IMapper mapper)
         {
             _userService = userService;
             _logger = logger;
             _emailService = emailService;
             _orgCounterService = orgCounterService;
             _notificationSettings = options.Value;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -35,16 +42,20 @@ namespace HNTAS.Core.Api.Controllers
         /// </summary>
         /// <returns>A list of user objects.</returns>
         [HttpGet] // This defines the route as GET /api/users
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<User>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<UserResponse>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<User>>> GetUsers()
+        public async Task<ActionResult<List<UserResponse>>> GetUsers()
         {
             _logger.LogInformation("Attempting to retrieve all users.");
             try
             {
                 var users = await _userService.GetAsync();
+
+                var usersResponse = _mapper.Map<List<UserResponse>>(users);
+
                 _logger.LogInformation("Successfully retrieved {UserCount} users.", users.Count);
-                return Ok(users); // Returns 200 OK with the list of users
+
+                return Ok(usersResponse); // Returns 200 OK with the list of users
             }
             catch (Exception ex)
             {
@@ -66,10 +77,10 @@ namespace HNTAS.Core.Api.Controllers
         ///   or a <see cref="StatusCodes.Status404NotFound"/> (Not Found) response if no user matches the provided ID.
         /// </returns>
         [HttpGet("{id:length(24)}", Name = "GetUserById")]
-        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)] // Explicitly defines success response type
+        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)] // Explicitly defines success response type
         [ProducesResponseType(StatusCodes.Status404NotFound)] // Explicitly defines not found response
         [ProducesResponseType(StatusCodes.Status500InternalServerError)] // Good practice to include for general errors
-        public async Task<ActionResult<User>> GetById(string id)
+        public async Task<ActionResult<UserResponse>> GetById(string id)
         {
             // Add logging for incoming request if desired
             _logger.LogInformation("Attempting to retrieve user with ID: {Id}", id);
@@ -82,8 +93,41 @@ namespace HNTAS.Core.Api.Controllers
                 return NotFound();
             }
 
+            var userResponse = _mapper.Map<UserResponse>(user);
+
             _logger.LogInformation("Successfully retrieved user with ID: {Id}", id);
-            return Ok(user);
+
+            return Ok(userResponse);
+        }
+
+
+        /// <summary>
+        /// Get a User by their OneLogin ID
+        /// </summary>
+        /// <param name="oneLoginId"></param>
+        /// <returns></returns>
+        [HttpGet("onelogin/{oneLoginId}", Name = "GetUserByOneLoginId")]
+        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)] // Explicitly defines success response type
+        [ProducesResponseType(StatusCodes.Status404NotFound)] // Explicitly defines not found response
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)] // Good practice to include for general errors
+        public async Task<ActionResult<UserResponse>> GetUserByOneLoginId(string oneLoginId)
+        {
+            // Add logging for incoming request if desired
+            _logger.LogInformation("Attempting to retrieve user with ID: {Id}", oneLoginId);
+
+            var user = await _userService.GetByUserOneLoginIdAsync(oneLoginId);
+
+            if (user == null)
+            {
+                _logger.LogWarning("User with ID {Id} not found.", oneLoginId);
+                return NotFound();
+            }
+
+            _logger.LogInformation("Successfully retrieved user with ID: {Id}", oneLoginId);
+
+            var userResponse = _mapper.Map<UserResponse>(user);
+
+            return Ok(userResponse);
         }
 
 
@@ -95,12 +139,11 @@ namespace HNTAS.Core.Api.Controllers
         /// <returns>A newly created user profile or an existing one if already registered.</returns>
         [HttpPost("initial-entry")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(User), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<User>> InitialRegisterUser([FromBody] InitialUserRegistrationRequest registrationData)
+        public async Task<ActionResult<string>> InitialRegisterUser([FromBody] InitialUserRegistrationRequest registrationData)
         {
             if (!ModelState.IsValid)
             {
@@ -111,11 +154,16 @@ namespace HNTAS.Core.Api.Controllers
 
             try
             {
-                var existingUser = await _userService.GetByUserIdAsync(registrationData.OneLoginId);
+                var existingUser = await _userService.GetByUserOneLoginIdAsync(registrationData.OneLoginId);
 
                 if (existingUser != null)
                 {
-                    return Ok(existingUser);
+                    return Conflict(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status409Conflict,
+                        Title = "User Already Exists",
+                        Detail = $"A user with the provided UserId ({registrationData.OneLoginId}) already exists."
+                    });
                 }
 
                 var newUser = new User
@@ -126,19 +174,10 @@ namespace HNTAS.Core.Api.Controllers
                 };
 
                 await _userService.CreateAsync(newUser);
+
                 _logger.LogInformation("New user initially registered: {UserId} (DB Id: {Id})", newUser.OneLoginId, newUser.Id);
 
-                return CreatedAtRoute("GetUserById", new { id = newUser.Id }, newUser);
-            }
-            catch (MongoWriteException ex) when (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
-            {
-                _logger.LogWarning(ex, "Duplicate key error during initial user registration for UserId: {UserId}, EmailId: {EmailId}", registrationData.OneLoginId, registrationData.EmailId);
-                return Conflict(new ProblemDetails
-                {
-                    Status = StatusCodes.Status409Conflict,
-                    Title = "User Already Exists",
-                    Detail = $"A user with the provided UserId ({registrationData.OneLoginId}) or EmailId ({registrationData.EmailId}) already exists."
-                });
+                return StatusCode(StatusCodes.Status201Created, newUser.Id);
             }
             catch (Exception ex)
             {
@@ -258,10 +297,10 @@ namespace HNTAS.Core.Api.Controllers
                 }
 
                 // Generate OrgId if it's not already set or is 0
-                if (existingUser.OrgDetails.OrgId == null || existingUser.OrgDetails.OrgId == 0)
+                if (string.IsNullOrWhiteSpace(existingUser.OrgDetails.OrgId))
                 {
                     long nextSequence = await _orgCounterService.GetNextSequenceValue("orgId_sequence");
-                    existingUser.OrgDetails.OrgId = (int)nextSequence;
+                    existingUser.OrgDetails.OrgId = $"ORG{nextSequence:D7}";
                 }
 
 
@@ -330,7 +369,7 @@ namespace HNTAS.Core.Api.Controllers
         // --- Private Helper Method ---
         private async Task TrySendOrgCreatedEmailAsync(User user)
         {
-            if (user?.OrgDetails == null || string.IsNullOrWhiteSpace(user.EmailId) || user.OrgDetails.OrgId == null || user.OrgDetails.OrgId == 0)
+            if (user?.OrgDetails == null || string.IsNullOrWhiteSpace(user.EmailId) || string.IsNullOrWhiteSpace(user.OrgDetails.OrgId))
             {
                 _logger.LogInformation("Skipping email: missing User, OrgDetails, EmailId, or OrgId for user {UserId}", user?.Id);
                 return;
@@ -349,7 +388,7 @@ namespace HNTAS.Core.Api.Controllers
                 new Dictionary<string, dynamic>
                 {
                     { "orgName", orgName },
-                    { "orgId", $"ORG{user.OrgDetails.OrgId:D7}" },
+                    { "orgId", user.OrgDetails.OrgId },
                     { "fullName", fullName },
                     { "address", formattedAddress }
                 }

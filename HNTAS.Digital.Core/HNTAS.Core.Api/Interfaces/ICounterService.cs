@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines the contract for a service that manages sequential counters specifically for organization-related IDs.
     /// </summary>
-    public interface IOrgCounterService
+    public interface ICounterService
     {
         /// <summary>
         /// Atomically increments and returns the next sequence value for a given organization-related counter.
