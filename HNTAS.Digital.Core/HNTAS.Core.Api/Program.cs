@@ -30,6 +30,9 @@ builder.Services.AddOpenApi("HNTAS.Core.Api");
 builder.Logging.AddAWSProvider(builder.Configuration.GetAWSLoggingConfigSection());
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
+Console.WriteLine("***********************************");
+Console.WriteLine("Environment: " + builder.Environment.EnvironmentName);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
