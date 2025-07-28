@@ -11,7 +11,7 @@ namespace HNTAS.Core.Api.Services
         private readonly IMongoCollection<HeatNetwork> _hnCollection;
         
 
-        public HeatNetworkService(IOptions<DbSettings> dbSettings)
+        public HeatNetworkService(IOptions<AWSDocDbSettings> dbSettings)
         {
             string? connectionString = Environment.GetEnvironmentVariable("DOCUMENT_DB_CONNECTION_STRING");
             if (string.IsNullOrEmpty(connectionString))

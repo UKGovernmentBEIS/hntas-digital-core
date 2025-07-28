@@ -1,11 +1,6 @@
-﻿using HNTAS.Core.Api.Configuration;
-using HNTAS.Core.Api.Interfaces;
+﻿using HNTAS.Core.Api.Interfaces;
 using HNTAS.Core.Api.Models;
-using HNTAS.Core.Api.Models.Requests;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using MongoDB.Driver;
 using System.Net.Mime;
 
 namespace HNTAS.Core.Api.Controllers
@@ -16,13 +11,13 @@ namespace HNTAS.Core.Api.Controllers
     {
         private readonly IHeatNetworkService _hnService;
         private readonly ILogger<HeatNetworksController> _logger;
-        private readonly IOrgCounterService _orgCounterService;
+        private readonly ICounterService _counterService;
 
-        public HeatNetworksController(IHeatNetworkService hnService, ILogger<HeatNetworksController> logger, IOrgCounterService orgCounterService)
+        public HeatNetworksController(IHeatNetworkService hnService, ILogger<HeatNetworksController> logger, ICounterService counterService)
         {
             _hnService = hnService;
             _logger = logger;
-            _orgCounterService = orgCounterService;
+            _counterService = counterService;
         }
 
         [HttpPost("add-heat-network")]
@@ -45,7 +40,7 @@ namespace HNTAS.Core.Api.Controllers
             {
                 if (String.IsNullOrWhiteSpace(heatNetworkDetails.hn_id)) 
                 {
-                    var sequenceID = await _orgCounterService.GetNextSequenceValue("heatNetworkId_sequence");
+                    var sequenceID = await _counterService.GetNextSequenceValue("heatNetworkId_sequence");
                     var heatNetworkId = $"HN{sequenceID:D7}";
                     heatNetworkDetails.hn_id = heatNetworkId;
                     _logger.LogInformation("Generated new heat network ID: {HeatNetworkId}", heatNetworkDetails.hn_id);
