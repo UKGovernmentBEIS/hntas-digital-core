@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Amazon.Runtime.Internal;
+using AutoMapper;
 using HNTAS.Core.Api.Configuration;
 using HNTAS.Core.Api.Data.Models;
 using HNTAS.Core.Api.Enums;
@@ -85,19 +86,34 @@ namespace HNTAS.Core.Api.Controllers
             // Add logging for incoming request if desired
             _logger.LogInformation("Attempting to retrieve user with ID: {Id}", id);
 
-            var user = await _userService.GetByIdAsync(id);
-
-            if (user == null)
+            try
             {
-                _logger.LogWarning("User with ID {Id} not found.", id);
-                return NotFound();
+                // Validate the ID format (optional, but good practice)
+                if (string.IsNullOrWhiteSpace(id) || id.Length != 24 || !System.Text.RegularExpressions.Regex.IsMatch(id, "^[0-9a-fA-F]{24}$"))
+                {
+                    _logger.LogWarning("Invalid user ID format: {Id}", id);
+                    return BadRequest("Invalid user ID format. Must be a 24-character hexadecimal string.");
+                }
+
+                var user = await _userService.GetByIdAsync(id);
+
+                if (user == null)
+                {
+                    _logger.LogWarning("User with ID {Id} not found.", id);
+                    return NotFound();
+                }
+
+                var userResponse = _mapper.Map<UserResponse>(user);
+
+                _logger.LogInformation("Successfully retrieved user with ID: {Id}", id);
+
+                return Ok(userResponse);
             }
-
-            var userResponse = _mapper.Map<UserResponse>(user);
-
-            _logger.LogInformation("Successfully retrieved user with ID: {Id}", id);
-
-            return Ok(userResponse);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating user ID format: {Id}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred while validating the user ID.");
+            }
         }
 
 
@@ -115,19 +131,27 @@ namespace HNTAS.Core.Api.Controllers
             // Add logging for incoming request if desired
             _logger.LogInformation("Attempting to retrieve user with ID: {Id}", oneLoginId);
 
-            var user = await _userService.GetByUserOneLoginIdAsync(oneLoginId);
-
-            if (user == null)
+            try
             {
-                _logger.LogWarning("User with ID {Id} not found.", oneLoginId);
-                return NotFound();
+                var user = await _userService.GetByUserOneLoginIdAsync(oneLoginId);
+
+                if (user == null)
+                {
+                    _logger.LogWarning("User with ID {Id} not found.", oneLoginId);
+                    return NotFound();
+                }
+
+                _logger.LogInformation("Successfully retrieved user with ID: {Id}", oneLoginId);
+
+                var userResponse = _mapper.Map<UserResponse>(user);
+
+                return Ok(userResponse);
             }
-
-            _logger.LogInformation("Successfully retrieved user with ID: {Id}", oneLoginId);
-
-            var userResponse = _mapper.Map<UserResponse>(user);
-
-            return Ok(userResponse);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving user by OneLogin ID: {Id}", oneLoginId);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred while retrieving the user.");
+            }
         }
 
 
@@ -321,6 +345,46 @@ namespace HNTAS.Core.Api.Controllers
                     Title = "Internal Server Error",
                     Detail = "An unexpected error occurred while updating organization details."
                 });
+            }
+        }
+
+        [HttpPatch("{id:length(24)}/heatnetwork/{heatNetworkId}")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> UpdateHeatNetworkId(string id, [FromRoute] string heatNetworkId)
+        {
+            try
+            {
+
+                var existingUser = await _userService.GetByIdAsync(id);
+
+                if (existingUser == null)
+                {
+                    _logger.LogWarning("User with ID {UserId} not found for heat network ID update.", id);
+                    return NotFound();
+                }
+
+
+                if (existingUser.HnIds == null)
+                {
+                    existingUser.HnIds = new List<string>() { heatNetworkId };
+                }
+                else if (!existingUser.HnIds.Contains(heatNetworkId))
+                {
+                    existingUser.HnIds.Add(heatNetworkId);
+                }
+
+                await _userService.UpdateAsync(id, existingUser); 
+
+                return NoContent(); // Return 204 No Content if the update was successful
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while updating heat network ID for user with ID: {UserId}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred while updating the heat network ID.");
             }
         }
 
