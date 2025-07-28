@@ -1,5 +1,6 @@
 using HNTAS.Core.Api.Configuration;
 using HNTAS.Core.Api.Interfaces;
+using HNTAS.Core.Api.MappingProfiles;
 using HNTAS.Core.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,11 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<NotificationSettings>(
     builder.Configuration.GetSection("NotificationSettings"));
 // Configure db settings
-builder.Services.Configure<DbSettings>(
-    builder.Configuration.GetSection("DbSettings"));
+builder.Services.Configure<AWSDocDbSettings>(
+    builder.Configuration.GetSection("AWSDocDbSettings"));
+
+// Register AutoMapper and scan for profiles
+builder.Services.AddAutoMapper(typeof(UserMappingProfile));
 
 builder.Services.AddSingleton<IUserService, UserService>();
-builder.Services.AddSingleton<IOrgCounterService, OrgCounterService>();
+builder.Services.AddSingleton<ICounterService, CounterService>();
 builder.Services.AddSingleton<IGovUkNotifyService, GovUkNotifyService>();
 builder.Services.AddSingleton<IHeatNetworkService, HeatNetworkService>();
 

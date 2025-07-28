@@ -1,22 +1,22 @@
 ﻿using HNTAS.Core.Api.Configuration;
+using HNTAS.Core.Api.Data.Models;
 using HNTAS.Core.Api.Interfaces;
-using HNTAS.Core.Api.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace HNTAS.Core.Api.Services
 {
-    public class OrgCounterService : IOrgCounterService
+    public class CounterService : ICounterService
     {
         private readonly IMongoCollection<Counter> _countersCollection;
-        private readonly ILogger<OrgCounterService> _logger;
+        private readonly ILogger<CounterService> _logger;
 
         /// <summary>
-        /// Initializes a new instance of the OrgCounterService.
+        /// Initializes a new instance of the CounterService.
         /// </summary>
-        /// <param name="mongoDbSettings">Configuration options for MongoDB settings.</param>
+        /// <param name="awsDocDbSettings">Configuration options for MongoDB settings.</param>
         /// <param name="logger">Logger for logging service operations and errors.</param>
-        public OrgCounterService(IOptions<DbSettings> mongoDbSettings, ILogger<OrgCounterService> logger)
+        public CounterService(IOptions<AWSDocDbSettings> awsDocDbSettings, ILogger<CounterService> logger)
         {
             _logger = logger;
 
@@ -27,14 +27,14 @@ namespace HNTAS.Core.Api.Services
                     "Set 'DOCUMENT_DB_CONNECTION_STRING' environment variable");
             }
 
-            if (string.IsNullOrEmpty(mongoDbSettings.Value.DatabaseName))
+            if (string.IsNullOrEmpty(awsDocDbSettings.Value.DatabaseName))
             {
-                _logger.LogCritical("MongoDB DatabaseName is missing in settings. OrgCounterService cannot initialize.");
+                _logger.LogCritical("MongoDB DatabaseName is missing in settings. CounterService cannot initialize.");
                 throw new InvalidOperationException("MongoDB DatabaseName is not configured. Please check appsettings.json or environment variables.");
             }
-            if (string.IsNullOrEmpty(mongoDbSettings.Value.OrgCountersCollectionName))
+            if (string.IsNullOrEmpty(awsDocDbSettings.Value.CountersCollectionName))
             {
-                _logger.LogCritical("MongoDB OrgCountersCollectionName is missing in settings. OrgCounterService cannot initialize.");
+                _logger.LogCritical("MongoDB OrgCountersCollectionName is missing in settings. CounterService cannot initialize.");
                 throw new InvalidOperationException("MongoDB OrgCountersCollectionName is not configured. Please check appsettings.json or environment variables.");
             }
 
@@ -42,16 +42,16 @@ namespace HNTAS.Core.Api.Services
             try
             {
                 var mongoClient = new MongoClient(connectionString);
-                var mongoDatabase = mongoClient.GetDatabase(mongoDbSettings.Value.DatabaseName);
-                _countersCollection = mongoDatabase.GetCollection<Counter>(mongoDbSettings.Value.OrgCountersCollectionName);
+                var mongoDatabase = mongoClient.GetDatabase(awsDocDbSettings.Value.DatabaseName);
+                _countersCollection = mongoDatabase.GetCollection<Counter>(awsDocDbSettings.Value.CountersCollectionName);
 
-                _logger.LogInformation("OrgCounterService initialized successfully. Connected to database '{DatabaseName}', using collection '{CollectionName}'.",
-                    mongoDbSettings.Value.DatabaseName, _countersCollection.CollectionNamespace.CollectionName);
+                _logger.LogInformation("CounterService initialized successfully. Connected to database '{DatabaseName}', using collection '{CollectionName}'.",
+                    awsDocDbSettings.Value.DatabaseName, _countersCollection.CollectionNamespace.CollectionName);
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, "Failed to connect to MongoDB for OrgCounterService. Check connection string and MongoDB server status.");
-                throw new InvalidOperationException("OrgCounterService failed to connect to MongoDB.", ex);
+                _logger.LogCritical(ex, "Failed to connect to Db for CounterService. Check connection string and MongoDB server status.");
+                throw new InvalidOperationException("CounterService failed to connect to MongoDB.", ex);
             }
         }
 

@@ -3,12 +3,12 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 
-namespace HNTAS.Core.Api.Models
+namespace HNTAS.Core.Api.Data.Models
 {
     public class OrgDetails
     {
         [BsonElement("org_id")]
-        public int? OrgId { get; set; }
+        public string? OrgId { get; set; }
 
         [Required(ErrorMessage = "Organization Type is required.")]
         [BsonElement("org_type")]

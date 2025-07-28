@@ -1,6 +1,6 @@
 ﻿using HNTAS.Core.Api.Configuration;
+using HNTAS.Core.Api.Data.Models;
 using HNTAS.Core.Api.Interfaces;
-using HNTAS.Core.Api.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -10,7 +10,7 @@ namespace HNTAS.Core.Api.Services
     {
         private readonly IMongoCollection<User> _usersCollection;
 
-        public UserService(IOptions<DbSettings> dbSettings)
+        public UserService(IOptions<AWSDocDbSettings> dbSettings)
         {
             string? connectionString = Environment.GetEnvironmentVariable("DOCUMENT_DB_CONNECTION_STRING");
             if (string.IsNullOrEmpty(connectionString))
@@ -32,7 +32,7 @@ namespace HNTAS.Core.Api.Services
             await _usersCollection.Find(user => user.Id == id).FirstOrDefaultAsync();
 
         // Get user by custom user_id
-        public async Task<User> GetByUserIdAsync(string oneLoginId) =>
+        public async Task<User> GetByUserOneLoginIdAsync(string oneLoginId) =>
             await _usersCollection.Find(user => user.OneLoginId == oneLoginId).FirstOrDefaultAsync();
 
         // Add a new user
@@ -46,7 +46,5 @@ namespace HNTAS.Core.Api.Services
         // Delete a user (by MongoDB's internal ObjectId)
         public async Task RemoveAsync(string id) =>
             await _usersCollection.DeleteOneAsync(user => user.Id == id);
-
-    
     }
 }

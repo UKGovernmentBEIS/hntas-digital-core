@@ -1,4 +1,4 @@
-﻿using HNTAS.Core.Api.Models;
+﻿using HNTAS.Core.Api.Data.Models;
 
 namespace HNTAS.Core.Api.Interfaces
 {
@@ -6,7 +6,7 @@ namespace HNTAS.Core.Api.Interfaces
     {
         Task<List<User>> GetAsync();
         Task<User> GetByIdAsync(string id);
-        Task<User> GetByUserIdAsync(string userId);
+        Task<User> GetByUserOneLoginIdAsync(string userId);
         Task CreateAsync(User newUser);
         Task UpdateAsync(string id, User updatedUser);
         Task RemoveAsync(string id);
