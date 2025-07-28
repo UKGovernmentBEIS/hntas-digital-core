@@ -19,6 +19,7 @@ builder.Services.AddAutoMapper(typeof(UserMappingProfile));
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<ICounterService, CounterService>();
 builder.Services.AddSingleton<IGovUkNotifyService, GovUkNotifyService>();
+builder.Services.AddSingleton<IHeatNetworkService, HeatNetworkService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
