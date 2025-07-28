@@ -15,6 +15,7 @@ builder.Services.Configure<DbSettings>(
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IOrgCounterService, OrgCounterService>();
 builder.Services.AddSingleton<IGovUkNotifyService, GovUkNotifyService>();
+builder.Services.AddSingleton<IHeatNetworkService, HeatNetworkService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
