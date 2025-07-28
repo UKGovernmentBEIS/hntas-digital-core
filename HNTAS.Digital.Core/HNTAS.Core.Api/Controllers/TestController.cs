@@ -58,12 +58,12 @@ namespace HNTAS.Core.Api.Controllers
                 var client = new MongoClient(connectionString);
 
                 var database = client.GetDatabase("docdb-HNTAS-dev");
-                var collection = database.GetCollection<dynamic>("Users");
+                var collection = database.GetCollection<User>("Users");
 
                 collection.InsertOne(new User { OneLoginId = "asdasdasd", Status = Enums.UserStatus.Active, EmailId = "ss@ss.com"});
 
-                var result = collection.Find(FilterDefinition<dynamic>.Empty).FirstOrDefault();
-                
+                var result = collection.Find(_ => true).ToListAsync();
+
                 _logger.LogInformation("Successfully connected to Amazon DocumentDB!");
 
 
