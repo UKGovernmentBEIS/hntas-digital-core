@@ -9,18 +9,26 @@ namespace HNTAS.Core.Api.Services
     public class UserService : IUserService
     {
         private readonly IMongoCollection<User> _usersCollection;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(IOptions<AWSDocDbSettings> dbSettings)
+        public UserService(IOptions<AWSDocDbSettings> dbSettings, ILogger<UserService> logger)
         {
+
+            _logger = logger;
+
             string? connectionString = Environment.GetEnvironmentVariable("DOCUMENT_DB_CONNECTION_STRING");
+
+            _logger.LogInformation("Initializing UserService with connection string : " + connectionString);
+
             if (string.IsNullOrEmpty(connectionString))
             {
                 throw new InvalidOperationException("MongoDB connection string is not configured. " +
                     "Set 'DOCUMENT_DB_CONNECTION_STRING' environment variable");
             }
-            var mongoClient = new MongoClient();
+            var mongoClient = new MongoClient(connectionString);
             var mongoDatabase = mongoClient.GetDatabase(dbSettings.Value.DatabaseName);
             _usersCollection = mongoDatabase.GetCollection<User>(dbSettings.Value.UsersCollectionName);
+           
         }
 
         // Get all users

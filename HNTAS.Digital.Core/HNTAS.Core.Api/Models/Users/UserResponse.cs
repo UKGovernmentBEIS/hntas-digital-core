@@ -7,6 +7,7 @@
         public string? FullName { get; set; }
         public Organisation? Organisation { get; set; }
         public List<string>? Roles { get; set; }
+        public List<string>? HnIds { get; set; }
         public string Status { get; set; } = null!;
     }
 }

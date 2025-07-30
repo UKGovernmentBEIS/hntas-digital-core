@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\PingController.cs" />
-    <Compile Remove="Controllers\TestController.cs" />
   </ItemGroup>
 
   <ItemGroup>

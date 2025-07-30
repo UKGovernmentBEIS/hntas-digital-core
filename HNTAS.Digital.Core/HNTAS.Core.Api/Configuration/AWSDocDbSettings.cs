@@ -6,5 +6,6 @@
         public string DatabaseName { get; set; }
         public string UsersCollectionName { get; set; }
         public string CountersCollectionName { get; set; }
+        public string HeatNetworksCollectionName { get; set; }
     }
 }

@@ -19,6 +19,7 @@ builder.Services.AddAutoMapper(typeof(UserMappingProfile));
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<ICounterService, CounterService>();
 builder.Services.AddSingleton<IGovUkNotifyService, GovUkNotifyService>();
+builder.Services.AddSingleton<IHeatNetworkService, HeatNetworkService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -29,6 +30,9 @@ builder.Services.AddOpenApi("HNTAS.Core.Api");
 
 builder.Logging.AddAWSProvider(builder.Configuration.GetAWSLoggingConfigSection());
 builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+Console.WriteLine("***********************************");
+Console.WriteLine("Environment: " + builder.Environment.EnvironmentName);
 
 var app = builder.Build();
 
