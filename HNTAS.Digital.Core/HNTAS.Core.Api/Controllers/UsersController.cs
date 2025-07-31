@@ -430,6 +430,31 @@ namespace HNTAS.Core.Api.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Checks if an organization with the given Companies House Number has any registered users.
+        /// </summary>
+        /// <param name="companiesHouseNumber">The Companies House Number to check.</param>
+        /// <returns>True if at least one user is found for the organization, otherwise false.</returns>
+        [HttpGet("organisation/exists/{companiesHouseNumber}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<bool>> CheckOrganisationExistsByCompaniesHouseNumber(string companiesHouseNumber)
+        {
+            _logger.LogInformation("Checking if organisation with Companies House Number {CompaniesHouseNumber} has registered users.", companiesHouseNumber);
+            try
+            {
+                var exists = await _userService.IsOrganisationHasRpUser(companiesHouseNumber);
+                _logger.LogInformation("Organisation with Companies House Number {CompaniesHouseNumber} exists: {Exists}", companiesHouseNumber, exists);
+                return Ok(exists);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while checking organisation existence for Companies House Number {CompaniesHouseNumber}.", companiesHouseNumber);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred while checking organisation existence.");
+            }
+        }
+
         // --- Private Helper Method ---
         private async Task TrySendOrgCreatedEmailAsync(User user)
         {
