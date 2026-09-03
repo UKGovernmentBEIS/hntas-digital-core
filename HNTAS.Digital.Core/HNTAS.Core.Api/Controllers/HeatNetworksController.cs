@@ -182,6 +182,66 @@ namespace HNTAS.Core.Api.Controllers
             }
         }
 
+        [HttpGet("heat-network-by-userId-paginated")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(typeof(PagedResult<HeatNetworkResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PagedResult<HeatNetworkResponse>>> GetHeatNetworksByUserIdPaginated(
+            [FromQuery] string userId,
+            [FromQuery] RegistrationSource registrationSource = RegistrationSource.HNTAS,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string sortBy = "Name",
+            [FromQuery] string sortDirection = "asc")
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning("GetHeatNetworksByUserId called with empty user Id");
+                return BadRequest("Please provide a valid user Id.");
+            }
+
+            if (pageNumber < 1 || pageSize < 1)
+            {
+                return BadRequest("Page number and page size must be greater than 0.");
+            }
+
+            try
+            {
+                var userDetails = await _userService.GetByIdAsync(userId);
+                if (userDetails == null || userDetails.HnRoleMappings == null || !userDetails.HnRoleMappings.Any())
+                {
+                    return NotFound("User or user role mappings not found.");
+                }
+
+                // Collect all HnIds for the user
+                var hnIds = userDetails.HnRoleMappings.Select(x => x.HnId).Distinct().ToList();
+
+                // Fetch paginated data from MongoDB
+                var (heatNetworks, totalCount) = await _hnService.GetByHnIdsAndRegistrationSourceAsync(
+                    hnIds, registrationSource, pageNumber, pageSize, sortBy, sortDirection);
+
+                var mappedResponses = _mapper.Map<List<HeatNetworkResponse>>(heatNetworks);
+
+                var result = new PagedResult<HeatNetworkResponse>
+                {
+                    Items = mappedResponses,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = (int)totalCount,
+                    TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                };
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while retrieving heat networks for ID: {UserId}", StringFormatter.Sanitize(userId));
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred while retrieving the heat networks.");
+            }
+        }
+
         [HttpGet("existing-network-by-userId")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(ExistingNetworkResponse), StatusCodes.Status200OK)]

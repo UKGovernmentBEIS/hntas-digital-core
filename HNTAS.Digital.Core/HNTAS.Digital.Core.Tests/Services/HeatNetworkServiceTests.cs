@@ -567,5 +567,69 @@ namespace HNTAS.Digital.Core.Tests.Services
             // Assert
             Assert.NotNull(result);            
         }
+
+
+        [Fact]
+        public async Task GetByHnIdsAndRegistrationSourceAsync_ShouldReturnPaginatedItemsAndTotalCount()
+        {
+            // Arrange
+            var hnIds = new List<string> { "HN0000001", "HN0000002" };
+            var registrationSource = RegistrationSource.HNTAS;
+            var pageNumber = 1;
+            var pageSize = 10;
+            var sortBy = "Name";
+            var sortDirection = "asc";
+
+            var expectedList = new List<HeatNetwork>
+            {
+                new HeatNetwork { Id = "1", HnId = "HN0000001", Name = "Alpha Network" },
+                new HeatNetwork { Id = "2", HnId = "HN0000002", Name = "Beta Network" }
+            };
+            long expectedCount = 2;
+
+            // 1. Mock CountDocumentsAsync
+            _mockCollection
+                .Setup(c => c.CountDocumentsAsync(
+                    It.IsAny<FilterDefinition<HeatNetwork>>(),
+                    It.IsAny<CountOptions>(),
+                    default))
+                .ReturnsAsync(expectedCount);
+
+            // 2. Mock IAsyncCursor for FindAsync
+            var mockCursor = new Mock<IAsyncCursor<HeatNetwork>>();
+            mockCursor.SetupSequence(c => c.MoveNextAsync(It.IsAny<CancellationToken>()))
+                      .ReturnsAsync(true)
+                      .ReturnsAsync(false);
+            mockCursor.Setup(c => c.Current).Returns(expectedList);
+
+            // 3. Mock FindAsync (underlying call for fluent Find operations)
+            _mockCollection
+                .Setup(c => c.FindAsync(
+                    It.IsAny<FilterDefinition<HeatNetwork>>(),
+                    It.IsAny<FindOptions<HeatNetwork, HeatNetwork>>(),
+                    default))
+                .ReturnsAsync(mockCursor.Object);
+
+            // Act
+            var (items, totalCount) = await _sut.GetByHnIdsAndRegistrationSourceAsync(
+                hnIds, registrationSource, pageNumber, pageSize, sortBy, sortDirection);
+
+            // Assert
+            Assert.Equal(expectedCount, totalCount);
+            Assert.NotNull(items);
+            Assert.Equal(2, items.Count);
+            Assert.Equal("HN0000001", items[0].HnId);
+
+            // Verify calls
+            _mockCollection.Verify(c => c.CountDocumentsAsync(
+                It.IsAny<FilterDefinition<HeatNetwork>>(),
+                It.IsAny<CountOptions>(),
+                default), Times.Once);
+
+            _mockCollection.Verify(c => c.FindAsync(
+                It.IsAny<FilterDefinition<HeatNetwork>>(),
+                It.IsAny<FindOptions<HeatNetwork, HeatNetwork>>(),
+                default), Times.Once);
+        }
     }
 }

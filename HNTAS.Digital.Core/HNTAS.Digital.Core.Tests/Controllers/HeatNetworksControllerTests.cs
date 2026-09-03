@@ -784,5 +784,113 @@ namespace HNTAS.Digital.Core.Tests.Controllers
             var resultValue = Assert.IsType<ObjectResult>(result.Result);
             Assert.Equal(StatusCodes.Status500InternalServerError, resultValue.StatusCode);
         }
+
+        #region GetHeatNetworksByUserIdPaginated Tests
+
+        [Fact]
+        public async Task GetHeatNetworksByUserIdPaginated_ReturnsOk_WithPagedResult()
+        {
+            // Arrange
+            var userId = "user-123";
+            var registrationSource = RegistrationSource.HNTAS;
+            var pageNumber = 1;
+            var pageSize = 10;
+            var sortBy = "Name";
+            var sortDirection = "asc";
+
+            var userDetails = new User
+            {
+                Id = userId,
+                HnRoleMappings = new List<HnRoleMapping>
+                {
+                    new HnRoleMapping { HnId = "HN0000001" }
+                }
+            };
+
+            var domainList = new List<HeatNetwork> { SampleHeatNetwork("1", "HN0000001") };
+            var responseList = new List<HeatNetworkResponse> { SampleHeatNetworkResponse("1", "HN0000001") };
+            long totalCount = 1;
+
+            _mockUserService
+                .Setup(s => s.GetByIdAsync(userId))
+                .ReturnsAsync(userDetails);
+
+            _mockHnService
+                .Setup(s => s.GetByHnIdsAndRegistrationSourceAsync(
+                    It.Is<List<string>>(ids => ids.Contains("HN0000001")),
+                    registrationSource,
+                    pageNumber,
+                    pageSize,
+                    sortBy,
+                    sortDirection))
+                .ReturnsAsync((domainList, totalCount));
+
+            _mockMapper
+                .Setup(m => m.Map<List<HeatNetworkResponse>>(domainList))
+                .Returns(responseList);
+
+            // Act
+            var result = await _controller.GetHeatNetworksByUserIdPaginated(
+                userId, registrationSource, pageNumber, pageSize, sortBy, sortDirection);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var pagedResult = Assert.IsType<PagedResult<HeatNetworkResponse>>(okResult.Value);
+
+            Assert.Equal(1, pagedResult.TotalCount);
+            Assert.Equal(1, pagedResult.TotalPages);
+            Assert.Equal(pageNumber, pagedResult.PageNumber);
+            Assert.Equal(pageSize, pagedResult.PageSize);
+            Assert.Single(pagedResult.Items);
+            Assert.Equal("HN0000001", pagedResult.Items[0].HnId);
+        }
+
+        [Fact]
+        public async Task GetHeatNetworksByUserIdPaginated_ReturnsBadRequest_WhenUserIdIsEmpty()
+        {
+            // Act
+            var result = await _controller.GetHeatNetworksByUserIdPaginated(string.Empty);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("Please provide a valid user Id.", badRequest.Value);
+        }
+
+        [Fact]
+        public async Task GetHeatNetworksByUserIdPaginated_ReturnsNotFound_WhenUserHasNoMappings()
+        {
+            // Arrange
+            var userId = "user-123";
+            _mockUserService
+                .Setup(s => s.GetByIdAsync(userId))
+                .ReturnsAsync((User)null);
+
+            // Act
+            var result = await _controller.GetHeatNetworksByUserIdPaginated(userId);
+
+            // Assert
+            var notFound = Assert.IsType<NotFoundObjectResult>(result.Result);
+            Assert.Equal("User or user role mappings not found.", notFound.Value);
+        }
+
+        [Fact]
+        public async Task GetHeatNetworksByUserIdPaginated_ReturnsInternalServerError_OnException()
+        {
+            // Arrange
+            var userId = "user-123";
+            _mockUserService
+                .Setup(s => s.GetByIdAsync(userId))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _controller.GetHeatNetworksByUserIdPaginated(userId);
+
+            // Assert
+            var statusResult = Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, statusResult.StatusCode);
+            Assert.Equal("An unexpected error occurred while retrieving the heat networks.", statusResult.Value);
+        }
+
+        #endregion
     }
 }

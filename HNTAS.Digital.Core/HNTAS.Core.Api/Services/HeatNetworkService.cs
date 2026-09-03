@@ -364,6 +364,38 @@ namespace HNTAS.Core.Api.Services
         {
             return await _hnCollection.Find(hn => hn.HnId == hnId && hn.RegistrationSource == registrationSource).FirstOrDefaultAsync();
         }
+
+        public async Task<(List<HeatNetwork> Items, long TotalCount)> GetByHnIdsAndRegistrationSourceAsync(
+                List<string> hnIds,
+                RegistrationSource registrationSource,
+                int pageNumber,
+                int pageSize,
+                string sortBy,
+                string sortDirection)
+        {
+            // Filter by IDs and RegistrationSource
+            var filter = Builders<HeatNetwork>.Filter.In(hn => hn.HnId, hnIds) &
+                         Builders<HeatNetwork>.Filter.Eq(hn => hn.RegistrationSource, registrationSource);
+
+            // Get total count for metadata
+            var totalCount = await _hnCollection.CountDocumentsAsync(filter);
+
+            // Dynamic sorting
+            var isDescending = sortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase);
+            var sortDefinition = isDescending
+                ? Builders<HeatNetwork>.Sort.Descending(sortBy)
+                : Builders<HeatNetwork>.Sort.Ascending(sortBy);
+
+            // Fetch paginated items directly from MongoDB
+            var items = await _hnCollection.Find(filter)
+                .Sort(sortDefinition)
+                .Skip((pageNumber - 1) * pageSize)
+                .Limit(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
         public async Task<List<HeatNetwork>> GetByOfgemEmailIdAsync(string ofgemEmailId)
         {
             // filter where ofgemUserEmailId is ofgemEmailId and orgId is null

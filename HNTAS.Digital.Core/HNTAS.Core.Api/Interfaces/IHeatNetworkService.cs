@@ -27,5 +27,13 @@ namespace HNTAS.Core.Api.Interfaces
         Task<List<HeatNetwork>> GetByOfgemEmailIdAsync(string ofgemEmailId);
         Task<HeatNetwork> GetByHnIdAndRegistrationSourceAsync(string hnId, RegistrationSource registrationSource);
         Task<ExistingNetworkResponse> GetExistingNetworks(ExistingNetworkRequest existingNetworkRequest);
+
+        Task<(List<HeatNetwork> Items, long TotalCount)> GetByHnIdsAndRegistrationSourceAsync(
+               List<string> hnIds,
+               RegistrationSource registrationSource,
+               int pageNumber,
+               int pageSize,
+               string sortBy,
+               string sortDirection);
     }
 }
