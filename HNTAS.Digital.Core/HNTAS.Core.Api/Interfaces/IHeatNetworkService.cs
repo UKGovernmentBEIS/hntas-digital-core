@@ -3,6 +3,7 @@ using HNTAS.Core.Api.Data.Models.External;
 using HNTAS.Core.Api.Enums;
 using HNTAS.Core.Api.Models.AssignedAssessor;
 using HNTAS.Core.Api.Models.HeatNetwork;
+using HNTAS.Core.Api.Models.Users;
 
 namespace HNTAS.Core.Api.Interfaces
 {
@@ -28,7 +29,7 @@ namespace HNTAS.Core.Api.Interfaces
         Task<HeatNetwork> GetByHnIdAndRegistrationSourceAsync(string hnId, RegistrationSource registrationSource);
         Task<ExistingNetworkResponse> GetExistingNetworks(ExistingNetworkRequest existingNetworkRequest);
 
-        Task<(List<HeatNetwork> Items, long TotalCount)> GetByHnIdsAndRegistrationSourceAsync(
+        Task<(List<UserNetworkDetailsResponse> Items, long TotalCount)> GetByHnIdsAndRegistrationSourcePaginatedAsync(
                List<string> hnIds,
                RegistrationSource registrationSource,
                int pageNumber,

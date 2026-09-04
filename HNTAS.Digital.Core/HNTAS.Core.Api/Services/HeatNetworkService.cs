@@ -7,12 +7,12 @@ using HNTAS.Core.Api.Helpers;
 using HNTAS.Core.Api.Interfaces;
 using HNTAS.Core.Api.Models.AssignedAssessor;
 using HNTAS.Core.Api.Models.HeatNetwork;
-using HNTAS.Core.Api.Models.NotificationHistory;
 using HNTAS.Core.Api.Models.Soa;
+using HNTAS.Core.Api.Models.Users;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Linq.Expressions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HNTAS.Core.Api.Services
 {
@@ -34,6 +34,12 @@ namespace HNTAS.Core.Api.Services
             _auditService = auditService;
             _userService = userService;
             _logger.LogInformation("HeatNetworkService initialized via Dependency Injection.");
+        }
+
+        // Exposed as protected virtual to allow unit tests to mock the aggregation pipeline.
+        protected virtual IAggregateFluent<HeatNetwork> Aggregate(AggregateOptions? options = null)
+        {
+            return _hnCollection.Aggregate(options);
         }
 
         public async Task CreateAsync(HeatNetwork newHeatNetwork, bool isNewHeatNetwork = false)
@@ -365,32 +371,46 @@ namespace HNTAS.Core.Api.Services
             return await _hnCollection.Find(hn => hn.HnId == hnId && hn.RegistrationSource == registrationSource).FirstOrDefaultAsync();
         }
 
-        public async Task<(List<HeatNetwork> Items, long TotalCount)> GetByHnIdsAndRegistrationSourceAsync(
-                List<string> hnIds,
-                RegistrationSource registrationSource,
-                int pageNumber,
-                int pageSize,
-                string sortBy,
-                string sortDirection)
+        [ExcludeFromCodeCoverage]
+        public async Task<(List<UserNetworkDetailsResponse> Items, long TotalCount)> GetByHnIdsAndRegistrationSourcePaginatedAsync(
+            List<string> hnIds,
+            RegistrationSource registrationSource,
+            int pageNumber,
+            int pageSize,
+            string sortBy,
+            string sortDirection)
         {
-            // Filter by IDs and RegistrationSource
             var filter = Builders<HeatNetwork>.Filter.In(hn => hn.HnId, hnIds) &
                          Builders<HeatNetwork>.Filter.Eq(hn => hn.RegistrationSource, registrationSource);
 
-            // Get total count for metadata
             var totalCount = await _hnCollection.CountDocumentsAsync(filter);
 
-            // Dynamic sorting
             var isDescending = sortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase);
             var sortDefinition = isDescending
                 ? Builders<HeatNetwork>.Sort.Descending(sortBy)
                 : Builders<HeatNetwork>.Sort.Ascending(sortBy);
 
-            // Fetch paginated items directly from MongoDB
-            var items = await _hnCollection.Find(filter)
+            var items = await Aggregate()
+                .Match(filter)
                 .Sort(sortDefinition)
                 .Skip((pageNumber - 1) * pageSize)
                 .Limit(pageSize)
+                .Lookup(
+                    foreignCollectionName: "Organisations",
+                    localField: "orgId",
+                    foreignField: "orgId",
+                    @as: "orgDocs"
+                )
+                .Project(new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "HnId", "$hnId" },
+                    { "Name", "$name" },
+                    { "AdditionalDescription", "$additionalDescription" },
+                    { "OrgId", "$orgId" },
+                    { "OrganisationName", new BsonDocument("$arrayElemAt", new BsonArray { "$orgDocs.name", 0 }) }
+                })
+                .As<UserNetworkDetailsResponse>()
                 .ToListAsync();
 
             return (items, totalCount);

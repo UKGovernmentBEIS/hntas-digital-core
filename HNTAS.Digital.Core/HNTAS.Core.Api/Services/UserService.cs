@@ -77,7 +77,7 @@ namespace HNTAS.Core.Api.Services
             return await _usersCollection.Find(filter).ToListAsync();
         }
 
-        public async Task<User?> GetResponsiblePersonByHnIdAsync(string hnId)
+        public async Task<User?> GetResponsiblePartyByHnIdAsync(string hnId)
         {
 
             // Filter to find the Organisation whose HnIds array contains the target hnId
@@ -102,8 +102,8 @@ namespace HNTAS.Core.Api.Services
             // Filter by the RpUserId from the organisation
             var userFilter = Builders<User>.Filter.Eq(u => u.Id, organisation.RpUserId);
 
-            // *Optional secondary check*: Ensure the user also has the ResponsiblePerson role
-            var roleCheck = Builders<User>.Filter.AnyEq(u => u.Roles, UserRole.ResponsiblePerson);
+            // *Optional secondary check*: Ensure the user also has the ResponsibleParty role
+            var roleCheck = Builders<User>.Filter.AnyEq(u => u.Roles, UserRole.ResponsibleParty);
 
             var finalFilter = Builders<User>.Filter.And(userFilter, roleCheck);
 
@@ -227,7 +227,7 @@ namespace HNTAS.Core.Api.Services
             }
         }
 
-        public async Task UpdateUserNetwork(string userId, string hnId, ContributorRole role = ContributorRole.ResponsiblePerson)
+        public async Task UpdateUserNetwork(string userId, string hnId, ContributorRole role = ContributorRole.ResponsibleParty)
         {
             var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
             // update hnRoleMappings array by adding a new mapping with the provided hnId and a default role (e.g., RP)

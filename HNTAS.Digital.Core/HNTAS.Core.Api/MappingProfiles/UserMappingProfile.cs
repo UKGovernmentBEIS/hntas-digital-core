@@ -130,7 +130,7 @@ namespace HNTAS.Core.Api.MappingProfiles
             CreateMap<User, UserRoleDetailResponse>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim()))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.RoleDescription, opt => opt.MapFrom(src => UserRole.ResponsiblePerson.GetDescription()));
+                .ForMember(dest => dest.RoleDescription, opt => opt.MapFrom(src => UserRole.ResponsibleParty.GetDescription()));
 
 
             CreateMap<UserDetailsResult, UserDetailsResponse>();

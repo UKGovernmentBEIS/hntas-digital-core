@@ -16,7 +16,7 @@ namespace HNTAS.Core.Api.Enums
         Certifier = 4,
         [Description("Network Manager")]
         NetworkManager = 5,
-        [Description("Responsible Person")]
-        ResponsiblePerson = 6
+        [Description("Responsible Party")]
+        ResponsibleParty = 6
     }
 }

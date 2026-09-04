@@ -144,7 +144,7 @@ namespace HNTAS.Core.Api.Controllers
                 _logger.LogInformation("Invitation sent by user {UserId}. New invitation ID: {InvitationId}", id.ToSafeLog(), newInvitation.Id);
 
 
-                if (request.ReplacedUserId != null && !(request.RolesToReplace.Contains(ContributorRole.ResponsiblePerson)
+                if (request.ReplacedUserId != null && !(request.RolesToReplace.Contains(ContributorRole.ResponsibleParty)
                     || request.RolesToReplace.Contains(ContributorRole.NetworkManager)))
                 {
                     var userToUpdate = await _userService.GetByIdAsync(request.ReplacedUserId);
@@ -281,11 +281,11 @@ namespace HNTAS.Core.Api.Controllers
             var invitedPerson = $"{invitation.FirstName} {invitation.LastName}".Trim();
             description = $"Email to {invitedPerson}";
             var actorIds = new List<string> { invitation.InviterUserId };
-            if (inviterRole == UserRole.ResponsiblePerson)
+            if (inviterRole == UserRole.ResponsibleParty)
             {
                 eligibleRoles = new List<string>
                 {
-                    ContributorRole.ResponsiblePerson.ToString(),
+                    ContributorRole.ResponsibleParty.ToString(),
                 };
 
                 if (invitedRole == ContributorRole.DesignatedDutyHolder)
@@ -306,7 +306,7 @@ namespace HNTAS.Core.Api.Controllers
             }
             else if (inviterRole == UserRole.NetworkManager) // Network Manager
             {
-                // Add the Responsible Person as an actor for the notification
+                // Add the Responsible Party as an actor for the notification
                 var nmInvitation = await _invitationService.GetByInvitedEmailAsync(user.EmailId);
                 var rpId = nmInvitation?.InviterUserId;
                 if (rpId != null && !actorIds.Contains(rpId))
@@ -315,7 +315,7 @@ namespace HNTAS.Core.Api.Controllers
                 }
                 eligibleRoles = new List<string>
                 {
-                    ContributorRole.ResponsiblePerson.ToString(),
+                    ContributorRole.ResponsibleParty.ToString(),
                     ContributorRole.NetworkManager.ToString()
                 };
 
@@ -336,7 +336,7 @@ namespace HNTAS.Core.Api.Controllers
 
                 eligibleRoles = new List<string>
                 {
-                    ContributorRole.ResponsiblePerson.ToString(),
+                    ContributorRole.ResponsibleParty.ToString(),
                     ContributorRole.NetworkManager.ToString(),
                 };
                 notificationType = NotificationHistoryType.DdhInvitesContributorToHeatNetwork;
@@ -370,7 +370,7 @@ namespace HNTAS.Core.Api.Controllers
             var date = DateTime.UtcNow;
             var action = string.Empty;
             var heatNetworkId = invitation.InvitedHnId;
-            var eligibleRoles = new List<string> { ContributorRole.ResponsiblePerson.ToString() };
+            var eligibleRoles = new List<string> { ContributorRole.ResponsibleParty.ToString() };
             NotificationHistoryType notificationType = NotificationHistoryType.NA;
             var invitedRole = invitation.InvitedRoles.FirstOrDefault();
             var invitedPerson = $"{invitation.FirstName} {invitation.LastName}".Trim();

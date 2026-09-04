@@ -7,7 +7,7 @@ namespace HNTAS.Core.Api.Helpers
     {
         private static readonly HashSet<UserRole> RolesGrantingFullAccess = new()
         {
-            UserRole.ResponsiblePerson,
+            UserRole.ResponsibleParty,
             UserRole.NetworkManager
         };
 

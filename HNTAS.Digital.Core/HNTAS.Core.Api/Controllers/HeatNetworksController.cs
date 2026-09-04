@@ -8,6 +8,7 @@ using HNTAS.Core.Api.Interfaces;
 using HNTAS.Core.Api.Models;
 using HNTAS.Core.Api.Models.HeatNetwork;
 using HNTAS.Core.Api.Models.Soa;
+using HNTAS.Core.Api.Models.Users;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 
@@ -184,11 +185,11 @@ namespace HNTAS.Core.Api.Controllers
 
         [HttpGet("heat-network-by-userId-paginated")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(PagedResult<HeatNetworkResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResult<UserNetworkDetailsResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<PagedResult<HeatNetworkResponse>>> GetHeatNetworksByUserIdPaginated(
+        public async Task<ActionResult<PagedResult<UserNetworkDetailsResponse>>> GetHeatNetworksByUserIdPaginated(
             [FromQuery] string userId,
             [FromQuery] RegistrationSource registrationSource = RegistrationSource.HNTAS,
             [FromQuery] int pageNumber = 1,
@@ -219,14 +220,12 @@ namespace HNTAS.Core.Api.Controllers
                 var hnIds = userDetails.HnRoleMappings.Select(x => x.HnId).Distinct().ToList();
 
                 // Fetch paginated data from MongoDB
-                var (heatNetworks, totalCount) = await _hnService.GetByHnIdsAndRegistrationSourceAsync(
+                var (heatNetworks, totalCount) = await _hnService.GetByHnIdsAndRegistrationSourcePaginatedAsync(
                     hnIds, registrationSource, pageNumber, pageSize, sortBy, sortDirection);
 
-                var mappedResponses = _mapper.Map<List<HeatNetworkResponse>>(heatNetworks);
-
-                var result = new PagedResult<HeatNetworkResponse>
+                var result = new PagedResult<UserNetworkDetailsResponse>
                 {
-                    Items = mappedResponses,
+                    Items = heatNetworks,
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TotalCount = (int)totalCount,
@@ -300,7 +299,7 @@ namespace HNTAS.Core.Api.Controllers
 
                 ContributorRole role = user.Roles[0] switch
                 {
-                    UserRole.ResponsiblePerson => ContributorRole.ResponsiblePerson,
+                    UserRole.ResponsibleParty => ContributorRole.ResponsibleParty,
                     UserRole.NetworkManager => ContributorRole.NetworkManager
                 };
 
@@ -309,7 +308,7 @@ namespace HNTAS.Core.Api.Controllers
                 userWithUpdatedHnRoleMapping.HnRoleMappings.Add(new HnRoleMapping { HnId = heatNetworkDetails.HnId, Role = role });
                 await _userService.UpdateAsync(heatNetworkDetails.CreatedBy, userWithUpdatedHnRoleMapping);
 
-                if (role == ContributorRole.ResponsiblePerson)
+                if (role == ContributorRole.ResponsibleParty)
                 {
                     //find the network managers
                     var allNetworkManagers = await _invitationService.GetNetworkManagersByInviterUserId(heatNetworkDetails.CreatedBy);
@@ -332,7 +331,7 @@ namespace HNTAS.Core.Api.Controllers
                     var orgDetails = await _organisationService.GetByOrgIdAsync(heatNetworkDetails.OrgId);
                     var rpUserId = orgDetails.RpUserId;
                     var rpUser = await _userService.GetByIdAsync(rpUserId);
-                    rpUser.HnRoleMappings.Add(new HnRoleMapping { HnId = heatNetworkDetails.HnId, Role = ContributorRole.ResponsiblePerson });
+                    rpUser.HnRoleMappings.Add(new HnRoleMapping { HnId = heatNetworkDetails.HnId, Role = ContributorRole.ResponsibleParty });
                     await _userService.UpdateAsync(rpUser.Id, rpUser);
                 }
                 _logger.LogInformation("New heat network role mapping updated");
@@ -462,9 +461,9 @@ namespace HNTAS.Core.Api.Controllers
             var description = $"{heatNetwork.HnId} - {heatNetwork.Name} registered";
             var notificationType = NotificationHistoryType.NA;
             var subject = NotificationHistorySubjects.NewBuildNetworkRegistered;
-            if (userRole == UserRole.ResponsiblePerson)
+            if (userRole == UserRole.ResponsibleParty)
             {
-                eligibleRoles.Add(UserRole.ResponsiblePerson.ToString());
+                eligibleRoles.Add(UserRole.ResponsibleParty.ToString());
                 notificationType = NotificationHistoryType.RpRegistersHeatNetwork;
             }
             else
@@ -472,7 +471,7 @@ namespace HNTAS.Core.Api.Controllers
                 var invitation = await _invitationService.GetByInvitedEmailAsync(user.EmailId!);
                 if (invitation != null)
                     actorIds.Add(invitation.InviterUserId);
-                eligibleRoles.Add(UserRole.ResponsiblePerson.ToString());
+                eligibleRoles.Add(UserRole.ResponsibleParty.ToString());
                 eligibleRoles.Add(UserRole.NetworkManager.ToString());
                 notificationType = NotificationHistoryType.NetworkManagerRegistersHeatNetwork;
             }
