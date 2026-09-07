@@ -487,7 +487,7 @@ namespace HNTAS.Digital.Core.Tests.Services
             // Arrange
             var user = new User { EmailId = "test@gmail.com", FirstName = "test", LastName = "test" };
             var hnName = "test";
-            var contributorRole = ContributorRole.ResponsiblePerson;
+            var contributorRole = ContributorRole.ResponsibleParty;
 
 
             _mockGovUkNotifyService.Setup(s => s.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Dictionary<string, dynamic>>(), It.IsAny<string>()))

@@ -231,7 +231,7 @@ namespace HNTAS.Digital.Core.Tests.Services
                     cursor.Current == new List<Invitation> { new Invitation { Id = "hn1" } } &&
                     cursor.MoveNext(It.IsAny<CancellationToken>()) == true &&
                     cursor.MoveNextAsync(It.IsAny<CancellationToken>()).Result == true));
-            await _sut.GetByInvitedDetailsAsync("hn1", "hn2", HNTAS.Core.Api.Enums.ContributorRole.ResponsiblePerson);
+            await _sut.GetByInvitedDetailsAsync("hn1", "hn2", HNTAS.Core.Api.Enums.ContributorRole.ResponsibleParty);
             _mockCollection.Verify(c => c.FindAsync(
                 It.IsAny<FilterDefinition<Invitation>>(),
                 It.IsAny<FindOptions<Invitation, Invitation>>(),
@@ -309,10 +309,10 @@ namespace HNTAS.Digital.Core.Tests.Services
         public async Task AddHnMapping_ShouldHandleHnMappingForNetworkManagerRole()
         {
             // Arrange
-            var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsiblePerson } } };
+            var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsibleParty } } };
             var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.NetworkManager }, InviterUserId = "test" };
 
-            _mockUserService.Setup(x => x.GetByIdAsync(It.IsAny<string>())).Returns(Task.FromResult(new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsiblePerson } } }));
+            _mockUserService.Setup(x => x.GetByIdAsync(It.IsAny<string>())).Returns(Task.FromResult(new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsibleParty } } }));
             _mockCollection.Setup(c => c.FindAsync(
                 It.IsAny<FilterDefinition<Invitation>>(),
                 It.IsAny<FindOptions<Invitation, Invitation>>(),
@@ -331,8 +331,8 @@ namespace HNTAS.Digital.Core.Tests.Services
         public async Task AddHnMapping_ShouldHandleHnMappingForOtherRolesNoHnId()
         {
             // Arrange
-            var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsiblePerson } } };
-            var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.ResponsiblePerson }, InviterUserId = "test" };
+            var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsibleParty } } };
+            var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.ResponsibleParty }, InviterUserId = "test" };
 
             _mockCollection.Setup(c => c.FindAsync(
                 It.IsAny<FilterDefinition<Invitation>>(),
@@ -353,7 +353,7 @@ namespace HNTAS.Digital.Core.Tests.Services
         {
             // Arrange
             var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.DesignatedDutyHolder } } };
-            var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.ResponsiblePerson }, InviterUserId = "test", InvitedHnId = "test" };
+            var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.ResponsibleParty }, InviterUserId = "test", InvitedHnId = "test" };
 
             _mockCollection.Setup(c => c.FindAsync(
                 It.IsAny<FilterDefinition<Invitation>>(),
@@ -373,7 +373,7 @@ namespace HNTAS.Digital.Core.Tests.Services
         public async Task AddOrganisation_AddContributionOrg()
         {
             var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.DesignatedDutyHolder } } };
-            var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.ResponsiblePerson }, InviterUserId = "test", InvitedHnId = "test", InvitedOrgId = "test" };
+            var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.ResponsibleParty }, InviterUserId = "test", InvitedHnId = "test", InvitedOrgId = "test" };
 
             _sut.AddOrganisation(user, invitation);
 
@@ -411,7 +411,7 @@ namespace HNTAS.Digital.Core.Tests.Services
         [Fact]
         public async Task MapAndFilterRoles_AddContributionOrg()
         {
-            var rolesToMap = new List<ContributorRole> { ContributorRole.ResponsiblePerson };
+            var rolesToMap = new List<ContributorRole> { ContributorRole.ResponsibleParty };
 
             var res = _sut.MapAndFilterRoles(rolesToMap);
 
@@ -421,7 +421,7 @@ namespace HNTAS.Digital.Core.Tests.Services
         //[Fact]
         //public async Task AuditLogs_ShouldSaveAuditLogs_OtherInvitedRoles()
         //{
-        //    var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.ResponsiblePerson }, InviterUserId = "test", InvitedHnId = "test" };
+        //    var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.ResponsibleParty }, InviterUserId = "test", InvitedHnId = "test" };
         //    var userId = "uid";
         //    var heatNetwork = new HeatNetwork
         //    {
@@ -470,7 +470,7 @@ namespace HNTAS.Digital.Core.Tests.Services
         [Fact]
         public async Task NotificationHistoryForAcceptingInvite_NetworkManager()
         {
-            var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsiblePerson } } };
+            var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsibleParty } } };
             var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.NetworkManager }, InviterUserId = "test", InvitedHnId = "test" };
             var heatNetwork = new HeatNetwork
             {
@@ -486,7 +486,7 @@ namespace HNTAS.Digital.Core.Tests.Services
         [Fact]
         public async Task NotificationHistoryForAcceptingInvite_DesignatedDutyHolder()
         {
-            var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsiblePerson } } };
+            var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsibleParty } } };
             var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.DesignatedDutyHolder }, InviterUserId = "test", InvitedHnId = "test" };
             var heatNetwork = new HeatNetwork
             {
@@ -509,7 +509,7 @@ namespace HNTAS.Digital.Core.Tests.Services
                     HnRoleMappings = new List<HnRoleMapping>
                     { new HnRoleMapping
                     {
-                        HnId = "test", Role = ContributorRole.ResponsiblePerson
+                        HnId = "test", Role = ContributorRole.ResponsibleParty
                     }
                     },
                     Roles = new List<UserRole> { UserRole.NetworkManager }
@@ -523,7 +523,7 @@ namespace HNTAS.Digital.Core.Tests.Services
         [Fact]
         public async Task NotificationHistoryForAcceptingInvite_Contributor()
         {
-            var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsiblePerson } } };
+            var user = new User { HnRoleMappings = new List<HnRoleMapping> { new HnRoleMapping { HnId = "test", Role = ContributorRole.ResponsibleParty } } };
             var invitation = new Invitation { InvitedRoles = new List<ContributorRole> { ContributorRole.Contributor }, InviterUserId = "test", InvitedHnId = "test" };
             var heatNetwork = new HeatNetwork
             {
@@ -546,7 +546,7 @@ namespace HNTAS.Digital.Core.Tests.Services
                     HnRoleMappings = new List<HnRoleMapping>
                     { new HnRoleMapping
                     {
-                        HnId = "test", Role = ContributorRole.ResponsiblePerson
+                        HnId = "test", Role = ContributorRole.ResponsibleParty
                     }
                     },
                     EmailId = "test",

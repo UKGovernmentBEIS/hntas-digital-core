@@ -7,10 +7,10 @@ namespace HNTAS.Core.Api.Enums
     public enum UserRole
     {
         /// <summary>
-        /// Represents a responsible person role.
+        /// Represents a responsible party role.
         /// </summary>
-        [Description("Responsible Person")]
-        ResponsiblePerson = 1,
+        [Description("Responsible Party")]
+        ResponsibleParty = 1,
 
         /// <summary>
         /// Represents a Network Manager role.

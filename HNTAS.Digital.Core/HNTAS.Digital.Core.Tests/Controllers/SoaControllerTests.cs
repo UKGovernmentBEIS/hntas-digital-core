@@ -254,7 +254,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
                 .Returns(Task.CompletedTask);
 
             _mockUserService.Setup(s => s.GetUserWithDetailsAsync(It.IsAny<string>()))
-                .ReturnsAsync(new UserDetailsResult { FirstName = "Test", LastName = "User", Roles = new List<UserRole> { UserRole.ResponsiblePerson } });
+                .ReturnsAsync(new UserDetailsResult { FirstName = "Test", LastName = "User", Roles = new List<UserRole> { UserRole.ResponsibleParty } });
 
             _mockUserService.Setup(s => s.GetUsersAssociatedByHnIdAsync(It.IsAny<string>()))
                 .Returns(Task.FromResult(new List<User> { new User { FirstName = "Test", LastName = "User", EmailId = "test", Id = "test" } }));
@@ -483,7 +483,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
                 .Returns(Task.FromResult(new Soa() { CreatedBy = "test" }));
 
             _mockUserService.Setup(s => s.GetUserWithDetailsAsync(It.IsAny<string>()))
-                .ReturnsAsync(new UserDetailsResult { FirstName = "Test", LastName = "User", Roles = new List<UserRole> { UserRole.ResponsiblePerson } });
+                .ReturnsAsync(new UserDetailsResult { FirstName = "Test", LastName = "User", Roles = new List<UserRole> { UserRole.ResponsibleParty } });
 
             _mockUserService.Setup(s => s.GetAssessorsByHnIdAsync(It.IsAny<string>()))
                 .Returns(Task.FromResult(new List<User> { new User { FirstName = "Test", LastName = "User", EmailId = "test", Id = "test" } }));
@@ -520,7 +520,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
                 .Returns(Task.FromResult(new Soa() { CreatedBy = "test" }));
 
             _mockUserService.Setup(s => s.GetUserWithDetailsAsync(It.IsAny<string>()))
-                .ReturnsAsync(new UserDetailsResult { FirstName = "Test", LastName = "User", Roles = new List<UserRole> { UserRole.ResponsiblePerson } });
+                .ReturnsAsync(new UserDetailsResult { FirstName = "Test", LastName = "User", Roles = new List<UserRole> { UserRole.ResponsibleParty } });
 
             _mockUserService.Setup(s => s.GetAssessorsByHnIdAsync(It.IsAny<string>()))
                 .Returns(Task.FromResult(new List<User>()));

@@ -87,7 +87,7 @@ namespace HNTAS.Digital.Core.Tests.Services
                 {
                     Roles = new List<UserRole>
                     {
-                        UserRole.ResponsiblePerson
+                        UserRole.ResponsibleParty
                     },
 
                 }));

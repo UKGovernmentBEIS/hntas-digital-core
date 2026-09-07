@@ -347,7 +347,7 @@ namespace HNTAS.Core.Api.Services
             { ContributorRole.Assessor, UserRole.Assessor },
             { ContributorRole.Certifier, UserRole.Certifier },
             { ContributorRole.NetworkManager, UserRole.NetworkManager },
-            { ContributorRole.ResponsiblePerson, UserRole.ResponsiblePerson }
+            { ContributorRole.ResponsibleParty, UserRole.ResponsibleParty }
         };
 
 
@@ -406,7 +406,7 @@ namespace HNTAS.Core.Api.Services
         public async Task NotificationHistoryForAcceptingInvite(Invitation invitation, User user, HeatNetwork heatNetwork)
         {
             var invitedRole = invitation.InvitedRoles.FirstOrDefault();
-            var eligibleRoles = new List<string>() { ContributorRole.ResponsiblePerson.ToString() };
+            var eligibleRoles = new List<string>() { ContributorRole.ResponsibleParty.ToString() };
             var subject = string.Empty;
             var action = string.Empty;
             var description = string.Empty;

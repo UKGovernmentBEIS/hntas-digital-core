@@ -75,7 +75,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
             // Arrange
             var userId = "testUserId";
             var kpiNetworks = new List<string> { "Network1", "Network2" };
-            _mockUserService.Setup(x => x.GetUserWithDetailsAsync(It.IsAny<string>())).ReturnsAsync(new UserDetailsResult { Roles = new List<UserRole> { UserRole.ResponsiblePerson }, EmailId = "trest", HnRoleMappings = new List<HnRoleMappingsUserResult> { new HnRoleMappingsUserResult { HeatNetwork = new HeatNetworkUserResponse { HnId = "HN1000002" }, Role = "ResponsiblePerson" } } });
+            _mockUserService.Setup(x => x.GetUserWithDetailsAsync(It.IsAny<string>())).ReturnsAsync(new UserDetailsResult { Roles = new List<UserRole> { UserRole.ResponsibleParty }, EmailId = "trest", HnRoleMappings = new List<HnRoleMappingsUserResult> { new HnRoleMappingsUserResult { HeatNetwork = new HeatNetworkUserResponse { HnId = "HN1000002" }, Role = "ResponsibleParty" } } });
 
             _mockSuperUserService.Setup(x => x.IsSuperUserAsync(It.IsAny<string>())).ReturnsAsync(false);
 
@@ -93,7 +93,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
             // Arrange
             var userId = "testUserId";
             var kpiNetworks = new List<string> { "Network1", "Network2" };
-            _mockUserService.Setup(x => x.GetUserWithDetailsAsync(It.IsAny<string>())).ReturnsAsync(new UserDetailsResult { Roles = new List<UserRole> { UserRole.NetworkManager }, EmailId = "trest", HnRoleMappings = new List<HnRoleMappingsUserResult> { new HnRoleMappingsUserResult { HeatNetwork = new HeatNetworkUserResponse { HnId = "HN1000002" }, Role = "ResponsiblePerson" } } });
+            _mockUserService.Setup(x => x.GetUserWithDetailsAsync(It.IsAny<string>())).ReturnsAsync(new UserDetailsResult { Roles = new List<UserRole> { UserRole.NetworkManager }, EmailId = "trest", HnRoleMappings = new List<HnRoleMappingsUserResult> { new HnRoleMappingsUserResult { HeatNetwork = new HeatNetworkUserResponse { HnId = "HN1000002" }, Role = "ResponsibleParty" } } });
 
             // Act
             var result = await _sut.GetKpiNetworksByRpUser(userId, 2, 3);
@@ -121,7 +121,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
             // Arrange
             var userId = "testUserId";
             var kpiNetworks = new List<string> { "Network1", "Network2" };
-            _mockUserService.Setup(x => x.GetUserWithDetailsAsync(It.IsAny<string>())).ReturnsAsync(new UserDetailsResult { Roles = new List<UserRole> { UserRole.ResponsiblePerson }, EmailId = "trest" });
+            _mockUserService.Setup(x => x.GetUserWithDetailsAsync(It.IsAny<string>())).ReturnsAsync(new UserDetailsResult { Roles = new List<UserRole> { UserRole.ResponsibleParty }, EmailId = "trest" });
 
             _mockSuperUserService.Setup(x => x.IsSuperUserAsync(It.IsAny<string>())).ReturnsAsync(false);
 
@@ -139,7 +139,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
             // Arrange
             var userId = "testUserId";
             var kpiNetworks = new List<string> { "Network1", "Network2" };
-            _mockUserService.Setup(x => x.GetUserWithDetailsAsync(It.IsAny<string>())).ReturnsAsync(new UserDetailsResult { Roles = new List<UserRole> { UserRole.NetworkManager }, EmailId = "trest", HnRoleMappings = new List<HnRoleMappingsUserResult> { new HnRoleMappingsUserResult { HeatNetwork = new HeatNetworkUserResponse { HnId = "HN1000002" }, Role = "ResponsiblePerson" } } });
+            _mockUserService.Setup(x => x.GetUserWithDetailsAsync(It.IsAny<string>())).ReturnsAsync(new UserDetailsResult { Roles = new List<UserRole> { UserRole.NetworkManager }, EmailId = "trest", HnRoleMappings = new List<HnRoleMappingsUserResult> { new HnRoleMappingsUserResult { HeatNetwork = new HeatNetworkUserResponse { HnId = "HN1000002" }, Role = "ResponsibleParty" } } });
 
             _mockSuperUserService.Setup(x => x.IsSuperUserAsync(It.IsAny<string>())).ReturnsAsync(true);
 

@@ -147,10 +147,10 @@ namespace HNTAS.Core.Api.Services
                     {
                         var globalRoles = userDoc["roles"].AsBsonArray.Select(r => r.AsString).ToList();
 
-                        // Check for Responsible Person first, then NetworkManager
-                        if (globalRoles.Contains(UserRole.ResponsiblePerson.ToString()))
+                        // Check for Responsible Party first, then NetworkManager
+                        if (globalRoles.Contains(UserRole.ResponsibleParty.ToString()))
                         {
-                            roleDescription = UserRole.ResponsiblePerson.GetDescription();
+                            roleDescription = UserRole.ResponsibleParty.GetDescription();
                         }
                         else if (globalRoles.Contains(UserRole.NetworkManager.ToString()))
                         {

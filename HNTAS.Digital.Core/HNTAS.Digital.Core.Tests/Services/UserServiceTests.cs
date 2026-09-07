@@ -265,7 +265,7 @@ namespace HNTAS.Digital.Core.Tests.Services
         }
 
         [Fact]
-        public async Task GetResponsiblePersonByHnIdAsync_ShouldReturnUser()
+        public async Task GetResponsiblePartyByHnIdAsync_ShouldReturnUser()
         {
             _mockOrgCollection.Setup(c => c.FindAsync(
                 It.IsAny<FilterDefinition<Organisation>>(),
@@ -285,7 +285,7 @@ namespace HNTAS.Digital.Core.Tests.Services
                     cursor.MoveNext(It.IsAny<CancellationToken>()) == true &&
                     cursor.MoveNextAsync(It.IsAny<CancellationToken>()).Result == true));
 
-            await _sut.GetResponsiblePersonByHnIdAsync("test");
+            await _sut.GetResponsiblePartyByHnIdAsync("test");
             _mockUserCollection.Verify(c => c.FindAsync(
                 It.IsAny<FilterDefinition<User>>(),
                 It.IsAny<FindOptions<User, User>>(),
@@ -293,7 +293,7 @@ namespace HNTAS.Digital.Core.Tests.Services
         }
 
         [Fact]
-        public async Task GetResponsiblePersonByHnIdAsync_ShouldNotReturnUser()
+        public async Task GetResponsiblePartyByHnIdAsync_ShouldNotReturnUser()
         {
             _mockOrgCollection.Setup(c => c.FindAsync(
                 It.IsAny<FilterDefinition<Organisation>>(),
@@ -305,7 +305,7 @@ namespace HNTAS.Digital.Core.Tests.Services
                     cursor.MoveNextAsync(It.IsAny<CancellationToken>()).Result == true));
             
 
-            await _sut.GetResponsiblePersonByHnIdAsync("test");
+            await _sut.GetResponsiblePartyByHnIdAsync("test");
             _mockUserCollection.Verify(c => c.FindAsync(
                 It.IsAny<FilterDefinition<User>>(),
                 It.IsAny<FindOptions<User, User>>(),
