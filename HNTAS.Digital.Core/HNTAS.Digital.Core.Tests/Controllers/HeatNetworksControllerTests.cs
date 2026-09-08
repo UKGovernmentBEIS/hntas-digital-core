@@ -7,6 +7,7 @@ using HNTAS.Core.Api.Interfaces;
 using HNTAS.Core.Api.Models;
 using HNTAS.Core.Api.Models.HeatNetwork;
 using HNTAS.Core.Api.Models.Soa;
+using HNTAS.Core.Api.Models.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -275,7 +276,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
                 EmailId = "user@example.com",
                 FirstName = "Test",
                 LastName = "User",
-                Roles = new List<UserRole> { UserRole.ResponsiblePerson },
+                Roles = new List<UserRole> { UserRole.ResponsibleParty },
             });
 
             _mockUserService.Setup(s => s.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(new User
@@ -284,7 +285,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
                 EmailId = "test",
                 HnRoleMappings = new List<HnRoleMapping>
                 {
-                    new HnRoleMapping { HnId = "HN0000001", Role = ContributorRole.ResponsiblePerson }
+                    new HnRoleMapping { HnId = "HN0000001", Role = ContributorRole.ResponsibleParty }
                 }
             });
 
@@ -477,7 +478,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
                 EmailId = "test",
                 HnRoleMappings = new List<HnRoleMapping>
                 {
-                    new HnRoleMapping { HnId = "HN0000001", Role = ContributorRole.ResponsiblePerson }
+                    new HnRoleMapping { HnId = "HN0000001", Role = ContributorRole.ResponsibleParty }
                 }
             });
 
@@ -511,7 +512,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
                 EmailId = "test",
                 HnRoleMappings = new List<HnRoleMapping>
                 {
-                    new HnRoleMapping { HnId = "HN0000001", Role = ContributorRole.ResponsiblePerson }
+                    new HnRoleMapping { HnId = "HN0000001", Role = ContributorRole.ResponsibleParty }
                 }
             });
 
@@ -753,7 +754,7 @@ namespace HNTAS.Digital.Core.Tests.Controllers
         {
             var request = new HeatNetwork { Id = "1", HnId = "HN000001", CreatedBy = "testuser" };
             _mockHnService.Setup(h => h.UpdateAsync(It.IsAny<string>(), It.IsAny<HeatNetwork>())).Returns(Task.CompletedTask);
-            _mockUserService.Setup(u => u.GetUserWithDetailsAsync(It.IsAny<string>())).ReturnsAsync(new UserDetailsResult { Roles = new List<UserRole> { UserRole.ResponsiblePerson} });
+            _mockUserService.Setup(u => u.GetUserWithDetailsAsync(It.IsAny<string>())).ReturnsAsync(new UserDetailsResult { Roles = new List<UserRole> { UserRole.ResponsibleParty } });
             _mockInvitationService.Setup(i => i.GetNetworkManagersByInviterUserId(It.IsAny<string>())).ReturnsAsync(new List<Invitation>() { new Invitation { Status = InvitationStatus.Accepted, InvitedEmail = "test" } });
             _mockUserService.Setup(u => u.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync(new User { Id = "user1", EmailId = "test" });
 
@@ -766,10 +767,10 @@ namespace HNTAS.Digital.Core.Tests.Controllers
         [Fact]
         public async Task RegisterOfgemNetwork_BadRequest()
         {
-            var request = new HeatNetwork { CreatedBy = "testuser" };            
+            var request = new HeatNetwork { CreatedBy = "testuser" };
 
-            var result = await _controller.RegisterOfgemNetwork(request);            
-            Assert.IsType<BadRequestObjectResult>(result.Result);            
+            var result = await _controller.RegisterOfgemNetwork(request);
+            Assert.IsType<BadRequestObjectResult>(result.Result);
         }
 
         [Fact]
@@ -777,12 +778,125 @@ namespace HNTAS.Digital.Core.Tests.Controllers
         {
             var request = new HeatNetwork { Id = "1", HnId = "HN000001", CreatedBy = "testuser" };
             _mockHnService.Setup(h => h.UpdateAsync(It.IsAny<string>(), It.IsAny<HeatNetwork>())).Throws(new Exception("DB failure"));
-            
+
 
             var result = await _controller.RegisterOfgemNetwork(request);
             Assert.NotNull(result);
             var resultValue = Assert.IsType<ObjectResult>(result.Result);
             Assert.Equal(StatusCodes.Status500InternalServerError, resultValue.StatusCode);
         }
+
+        #region GetHeatNetworksByUserIdPaginated Tests
+
+        [Fact]
+        public async Task GetHeatNetworksByUserIdPaginated_ReturnsOk_WithPagedResult()
+        {
+            // Arrange
+            var userId = "user-123";
+            var registrationSource = RegistrationSource.HNTAS;
+            var pageNumber = 1;
+            var pageSize = 10;
+            var sortBy = "Name";
+            var sortDirection = "asc";
+
+            var userDetails = new User
+            {
+                Id = userId,
+                HnRoleMappings = new List<HnRoleMapping>
+                {
+                    new HnRoleMapping { HnId = "HN0000001" }
+                }
+            };
+
+            var domainList = new List<UserNetworkDetailsResponse>
+            {
+                new UserNetworkDetailsResponse
+                {
+                    HnId = "HN0000001",
+                    Name = "Network A",
+                    OrganisationName = "Organisation A",
+                    OrgId = "ORG0000001"
+                }
+            };
+
+            long totalCount = 1;
+
+            _mockUserService
+                .Setup(s => s.GetByIdAsync(userId))
+                .ReturnsAsync(userDetails);
+
+            _mockHnService
+                .Setup(s => s.GetByHnIdsAndRegistrationSourcePaginatedAsync(
+                    It.Is<List<string>>(ids => ids.Contains("HN0000001")),
+                    registrationSource,
+                    pageNumber,
+                    pageSize,
+                    sortBy,
+                    sortDirection))
+                .ReturnsAsync((domainList, totalCount));
+
+            // Act
+            var actionResult = await _controller.GetHeatNetworksByUserIdPaginated(
+                userId, registrationSource, pageNumber, pageSize, sortBy, sortDirection);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+            var pagedResult = Assert.IsType<PagedResult<UserNetworkDetailsResponse>>(okResult.Value);
+
+            Assert.Equal(1, pagedResult.TotalCount);
+            Assert.Equal(1, pagedResult.TotalPages);
+            Assert.Equal(pageNumber, pagedResult.PageNumber);
+            Assert.Equal(pageSize, pagedResult.PageSize);
+            Assert.Single(pagedResult.Items);
+            Assert.Equal("HN0000001", pagedResult.Items[0].HnId);
+        }
+
+        [Fact]
+        public async Task GetHeatNetworksByUserIdPaginated_ReturnsBadRequest_WhenUserIdIsEmpty()
+        {
+            // Act
+            var result = await _controller.GetHeatNetworksByUserIdPaginated(string.Empty);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("Please provide a valid user Id.", badRequest.Value);
+        }
+
+        [Fact]
+        public async Task GetHeatNetworksByUserIdPaginated_ReturnsNotFound_WhenUserHasNoMappings()
+        {
+            // Arrange
+            var userId = "user-123";
+            _mockUserService
+                .Setup(s => s.GetByIdAsync(userId))
+                .ReturnsAsync((User)null);
+
+            // Act
+            var result = await _controller.GetHeatNetworksByUserIdPaginated(userId);
+
+            // Assert
+            var notFound = Assert.IsType<NotFoundObjectResult>(result.Result);
+            Assert.Equal("User or user role mappings not found.", notFound.Value);
+        }
+
+        [Fact]
+        public async Task GetHeatNetworksByUserIdPaginated_ReturnsInternalServerError_OnException()
+        {
+            // Arrange
+            var userId = "user-123";
+            _mockUserService
+                .Setup(s => s.GetByIdAsync(userId))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _controller.GetHeatNetworksByUserIdPaginated(userId);
+
+            // Assert
+            var statusResult = Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, statusResult.StatusCode);
+            Assert.Equal("An unexpected error occurred while retrieving the heat networks.", statusResult.Value);
+        }
+
+        #endregion
     }
 }

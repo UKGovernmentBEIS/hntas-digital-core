@@ -191,7 +191,7 @@ namespace HNTAS.Core.Api.Services
             // Check with user id
             var user = await _userService.GetByEmailAsync(row.EmailId.ToLower());
             // User exists and has RP role
-            if (user != null && user.Roles.Contains(Enums.UserRole.ResponsiblePerson))
+            if (user != null && user.Roles.Contains(Enums.UserRole.ResponsibleParty))
             {
                 // Get org details for the user
                 var userOrgDetails = await _organisationService.GetByOrgIdAsync(user.OrgId!);

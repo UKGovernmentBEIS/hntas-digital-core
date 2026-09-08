@@ -259,9 +259,9 @@ namespace HNTAS.Digital.Core.Tests.Controllers
         }
 
         [Theory]
-        [InlineData(UserRole.ResponsiblePerson, ContributorRole.NetworkManager)]
-        [InlineData(UserRole.ResponsiblePerson, ContributorRole.DesignatedDutyHolder)]
-        [InlineData(UserRole.ResponsiblePerson, ContributorRole.Contributor)]
+        [InlineData(UserRole.ResponsibleParty, ContributorRole.NetworkManager)]
+        [InlineData(UserRole.ResponsibleParty, ContributorRole.DesignatedDutyHolder)]
+        [InlineData(UserRole.ResponsibleParty, ContributorRole.Contributor)]
         [InlineData(UserRole.NetworkManager, ContributorRole.DesignatedDutyHolder)]
         [InlineData(UserRole.NetworkManager, ContributorRole.Contributor)]
         [InlineData(UserRole.DesignatedDutyHolder, ContributorRole.Contributor)]
