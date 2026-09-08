@@ -187,7 +187,7 @@ public class UsersController : ControllerBase
 
 
     /// <summary>
-    /// Check if a user is a Responsible Person by their email ID
+    /// Check if a user is a Responsible Party by their email ID
     /// </summary>
     /// <remarks>
     /// Validates whether the user associated with the given email ID has the RegulatoryContact role.
@@ -215,12 +215,12 @@ public class UsersController : ControllerBase
 
             userId = user.Id; // Store user ID for logging in case of an error
 
-            bool isRegulatoryContact = user.Roles.Contains(UserRole.ResponsiblePerson);
+            bool isRegulatoryContact = user.Roles.Contains(UserRole.ResponsibleParty);
             return Ok(isRegulatoryContact);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while checking Responsible Person role for user Id : {UserId}", userId);
+            _logger.LogError(ex, "Error occurred while checking Responsible Party role for user Id : {UserId}", userId);
             return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred while checking the user's role.");
         }
     }
@@ -514,7 +514,7 @@ public class UsersController : ControllerBase
                     if (invitaions != null)
                         newOrganisation.RpUserId = invitaions.InviterUserId;
                 }
-                else if (existingUser.Roles.Contains(UserRole.ResponsiblePerson))
+                else if (existingUser.Roles.Contains(UserRole.ResponsibleParty))
                 {
                     newOrganisation.RpUserId = existingUser.Id;
                 }                
@@ -875,11 +875,11 @@ public class UsersController : ControllerBase
             return BadRequest("Heat Network ID must be provided.");
         }
 
-        // Get Responsible Person
-        var rpUser = await _userService.GetResponsiblePersonByHnIdAsync(hnId);
+        // Get Responsible Party
+        var rpUser = await _userService.GetResponsiblePartyByHnIdAsync(hnId);
         if (rpUser == null)
         {
-            return NotFound($"No Responsible Person found for Heat Network ID: {hnId.ToSafeLog()}");
+            return NotFound($"No Responsible Party found for Heat Network ID: {hnId.ToSafeLog()}");
         }
 
         // Get other users with roles

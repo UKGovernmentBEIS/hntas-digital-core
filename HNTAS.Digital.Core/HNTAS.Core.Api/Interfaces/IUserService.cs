@@ -20,13 +20,13 @@ namespace HNTAS.Core.Api.Interfaces
         Task<UserDetailsResult> GetUserWithDetailsAsync(string userId);
 
         Task<List<User>> GetAssessorsByHnIdAsync(string hnId);
-        Task<User?> GetResponsiblePersonByHnIdAsync(string hnId);
+        Task<User?> GetResponsiblePartyByHnIdAsync(string hnId);
         Task<List<User>> GetContributorsByHnIdAsync(string hnId);
 
         Task<List<UserDetailsResult>> GetUsersByInvitedEmailsWithDetailsAsync(List<string> invitedEmails);
         Task<List<UserRoleDetailResponse>> GetHeatNetworkUsersWithRolesAsync(string hnId);
         Task<List<User>> GetUsersAssociatedByHnIdAsync(string hnId);
-        Task UpdateUserNetwork(string userId, string hnId, ContributorRole role = ContributorRole.ResponsiblePerson);
+        Task UpdateUserNetwork(string userId, string hnId, ContributorRole role = ContributorRole.ResponsibleParty);
         Task<List<User>> GetActiveNetworkManagersByRpUserIdAsync(string rpUserId);
     }
 }

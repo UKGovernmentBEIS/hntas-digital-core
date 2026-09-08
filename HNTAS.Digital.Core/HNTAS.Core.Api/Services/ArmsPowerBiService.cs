@@ -84,7 +84,7 @@ namespace HNTAS.Core.Api.Services
                 var pipeline = _usersCollection.Aggregate()
                     // 1. Filter for Active users only (matches the string stored in DB)
                     .Match(new BsonDocument("status", UserStatus.Active.ToString()))
-                    .Match(new BsonDocument("roles", UserRole.ResponsiblePerson.ToString()))
+                    .Match(new BsonDocument("roles", UserRole.ResponsibleParty.ToString()))
 
                     // 2. Deconstruct the hnRoleMappings array to handle users with multiple heat networks
                     .Unwind("hnRoleMappings", new AggregateUnwindOptions<BsonDocument> { PreserveNullAndEmptyArrays = false })

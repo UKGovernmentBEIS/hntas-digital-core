@@ -5,9 +5,11 @@ using HNTAS.Core.Api.Enums;
 using HNTAS.Core.Api.Interfaces;
 using HNTAS.Core.Api.Models.AssignedAssessor;
 using HNTAS.Core.Api.Models.HeatNetwork;
+using HNTAS.Core.Api.Models.Users;
 using HNTAS.Core.Api.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Moq;
 
