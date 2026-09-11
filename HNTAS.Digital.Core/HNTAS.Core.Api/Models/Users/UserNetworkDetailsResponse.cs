@@ -11,8 +11,8 @@ namespace HNTAS.Core.Api.Models.Users
 
         public string? AdditionalDescription { get; set; }
 
-        public string OrganisationName { get; set; } = null!;
+        public string? OrganisationName { get; set; }
 
-        public string OrgId { get; set; } = null!;
+        public string? OrgId { get; set; }
     }
 }
