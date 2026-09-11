@@ -9,14 +9,14 @@ Backend API responsible for business logic, validation, and data persistence for
 
 | Layer | Technology |
 | :--- | :--- |
-| **Runtime** | .NET 9, C# |
+| **Runtime** | .NET 10, C# |
 | **API Framework** | ASP.NET Core Web API |
 | **Database** | DocumentDB (MongoDB-compatible) |
 
 ## Running Locally
 
 ### Prerequisites
-- .NET 9 SDK
+- .NET 10 SDK
 - Docker Desktop installed
 
 
