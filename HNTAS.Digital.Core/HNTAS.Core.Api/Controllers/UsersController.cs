@@ -810,8 +810,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
     public async Task<ActionResult<PagedResult<ManagedUserResponse>>> GetDdhAndContributorsPaginated(
-        string userId, 
-        bool networkManagersOnly = false,
+        string userId,         
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string sortBy = "firstName",
