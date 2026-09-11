@@ -136,6 +136,80 @@ namespace HNTAS.Core.Api.Services
                 .ToListAsync();
         }
 
+        public async Task<(List<ManagedUserResponse> items, long totalCount)> GetInvitedUsersDdhAndContributorsAsync(string inviterUserId, int pageNumber,
+            int pageSize,
+            string sortBy,
+            string sortDirection)
+        {
+            var inviterObjectId = ObjectId.Parse(inviterUserId);
+
+            var pipeline = new[]
+            {
+                // Match invitations sent by the specified user and the invited roles are either DesignatedDutyHolder or Contributor
+                new BsonDocument("$match", new BsonDocument
+                {
+                    { "inviterUserId", inviterObjectId },
+                    { "invitedRoles", new BsonDocument("$in", new BsonArray { ContributorRole.DesignatedDutyHolder.ToString(), ContributorRole.Contributor.ToString() }) }
+                }),
+
+                // Lookup heat network name using invitedHnId
+                new BsonDocument("$lookup", new BsonDocument
+                {
+                    { "from", "HeatNetworks" },
+                    { "localField", "invitedHnId" },
+                    { "foreignField", "hnId" },
+                    { "as", "heatNetworkDetails" }
+                }),
+
+                // Sort by invitedAt descending
+                new BsonDocument("$sort", new BsonDocument(sortBy, sortDirection == "asc" ? 1 : -1)),
+
+                new BsonDocument("$skip", (pageNumber - 1) * pageSize),
+                new BsonDocument("$limit", pageSize),
+
+                // Project into RegisteredUserResponse shape
+                new BsonDocument("$project", new BsonDocument
+                {
+                    { "_id", new BsonDocument("$toString", "$_id") },
+                    { "name", new BsonDocument("$concat", new BsonArray { "$firstName", " ", "$lastName" }) },
+                    { "emailId", "$invitedEmail" },
+                    { "invitedAt", "$invitedAt" },
+                    { "status", new BsonDocument("$toString", "$status") },
+                    { "roles", new BsonDocument("$map", new BsonDocument
+                        {
+                            { "input", "$invitedRoles" },
+                            { "as", "role" },
+                            { "in", new BsonDocument("$toString", "$$role") }
+                        })
+                    },
+                    { "heatNetworks", new BsonDocument("$map", new BsonDocument
+                        {
+                            { "input", "$heatNetworkDetails" },
+                            { "as", "hn" },
+                            { "in", new BsonDocument
+                                {
+                                    { "hnId", "$$hn.hnId" },
+                                    { "name", "$$hn.name" }
+                                }
+                            }
+                        })
+                    }
+                })
+            };
+
+            
+            
+            var totalCountResult = await _invitationsCollection.CountDocumentsAsync(new BsonDocument
+            {
+                { "inviterUserId", inviterObjectId },
+                { "invitedRoles", new BsonDocument("$in", new BsonArray { ContributorRole.DesignatedDutyHolder.ToString(), ContributorRole.Contributor.ToString() }) }
+            });                
+
+            return (await _invitationsCollection
+                .Aggregate<ManagedUserResponse>(pipeline)
+                .ToListAsync(), totalCountResult);
+        }
+
         // Get invitation by invitedEmailId, invitedHnId, invitedRole
         public async Task<Invitation> GetByInvitedDetailsAsync(string invitedEmailId, string invitedHnId, ContributorRole invitedRole) =>
             await _invitationsCollection.Find(invitation => invitation.InvitedEmail == invitedEmailId && invitation.InvitedHnId == invitedHnId && invitation.InvitedRoles.Contains(invitedRole) && invitation.Status == Enums.InvitationStatus.Accepted).FirstOrDefaultAsync();

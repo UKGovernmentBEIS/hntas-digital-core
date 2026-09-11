@@ -28,5 +28,6 @@ namespace HNTAS.Core.Api.Interfaces
         Task<List<User>> GetUsersAssociatedByHnIdAsync(string hnId);
         Task UpdateUserNetwork(string userId, string hnId, ContributorRole role = ContributorRole.ResponsibleParty);
         Task<List<User>> GetActiveNetworkManagersByRpUserIdAsync(string rpUserId);
+        Task<List<ManagedUserResponse>> GetActiveUsers(List<ManagedUserResponse> users);
     }
 }
