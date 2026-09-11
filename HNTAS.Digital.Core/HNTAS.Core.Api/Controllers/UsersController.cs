@@ -805,6 +805,51 @@ public class UsersController : ControllerBase
     }
     #endregion
 
+    [HttpGet("ddh-and-contributors-paginated")]
+    [ProducesResponseType(typeof(PagedResult<ManagedUserResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<ActionResult<PagedResult<ManagedUserResponse>>> GetDdhAndContributorsPaginated(
+        string userId, 
+        bool networkManagersOnly = false,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string sortBy = "firstName",
+        [FromQuery] string sortDirection = "asc")
+    {
+        var user = await _userService.GetUserWithDetailsAsync(userId);
+        if (user == null)
+        {
+            _logger.LogWarning("User with ID {UserId} not found.", userId.ToSafeLog());
+            return NotFound();
+        }
+        var managedUsers = new List<ManagedUserResponse>();
+        
+        var (invitations, totalCount) = await _invitationService.GetInvitedUsersDdhAndContributorsAsync(user.Id, pageNumber, pageSize, sortBy, sortDirection);
+        
+        // get the invitations where the status is accepted
+        var acceptedInvitations = invitations.Where(i => i.Status == InvitationStatus.Accepted.ToString()).ToList();
+
+        var usersStatusFromAcceptedInvitation = await _userService.GetActiveUsers(acceptedInvitations);
+
+        foreach (var userStatus in usersStatusFromAcceptedInvitation)
+        {
+            var invitation = invitations.FirstOrDefault(i => i.EmailId == userStatus.EmailId && i.HeatNetworks!.Any(hn => hn.HnId == (userStatus.HeatNetworks!.FirstOrDefault()?.HnId)));
+            if (invitation != null)
+            {
+                invitation.Status = userStatus.Status;
+            }
+        }
+
+        _logger.LogInformation("Managed users retrieved successfully for user ID: {UserId}", userId.ToSafeLog());
+        return Ok(new PagedResult<ManagedUserResponse>
+        {
+            Items = invitations,
+            TotalCount =  (int)totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
+    }
+
     [HttpGet("network-managers")]
     [ProducesResponseType(typeof(List<InvitedUserResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
