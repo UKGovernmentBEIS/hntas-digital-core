@@ -244,6 +244,47 @@ namespace HNTAS.Core.Api.Services
                 result.ModifiedCount);
         }
 
+        // Check if the users have active status against Users collection, if not then update the status to Invited in the response object
+        public async Task<List<ManagedUserResponse>> GetActiveUsers(List<ManagedUserResponse> users)
+        {
+            if (users == null || users.Count == 0)
+            {
+                return new List<ManagedUserResponse>();
+            }
+
+            var emails = users
+                .Where(u => !string.IsNullOrWhiteSpace(u.EmailId))
+                .Select(u => u.EmailId)
+                .Distinct()
+                .ToList();
+
+            if (emails.Count == 0)
+            {
+                return users;
+            }
+
+            var activeEmails = await _usersCollection
+                .Find(u => emails.Contains(u.EmailId) && u.Status == UserStatus.Active)
+                .Project(u => u.EmailId)
+                .ToListAsync();
+
+            var activeEmailSet = new HashSet<string>(activeEmails, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var user in users)
+            {
+                if (string.IsNullOrWhiteSpace(user.EmailId) || !activeEmailSet.Contains(user.EmailId))
+                {
+                    user.Status = InvitationStatus.Invited.ToString();
+                }
+                else
+                {
+                    user.Status = UserStatus.Active.ToString();
+                }
+            }
+
+            return users;
+        }
+
         // --- Private Helper Method for Reusable Pipeline ---
 
         /// <summary>
